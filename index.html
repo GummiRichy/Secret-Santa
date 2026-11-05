@@ -1,0 +1,1530 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Santa Rounds</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#e5455c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Santa Rounds">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Luckiest+Guy&display=swap" rel="stylesheet">
+</head>
+<body data-look="candy">
+<style>
+/* Layout: one phone-width column of chunky "sticker" cards (ink outline + hard drop shadow) over a patterned holiday ground; tab bar docked at the bottom like an app. Each room picks its own ground color. */
+:root{
+  --ink:#211d3b;
+  --paper:#ffffff;
+  --muted:#625b7e;
+  --line:#e7e2f1;
+  --gold:#ffd23f;
+  --bg:#e5455c; --bg2:rgba(255,255,255,.12); --pop:#e5455c; --pop2:#32c48d; --soft:#fff0f2;
+  --pat:repeating-linear-gradient(135deg,transparent 0 34px,var(--bg2) 34px 68px);
+  --patsize:auto;
+  --display:"Luckiest Guy","Arial Rounded MT Bold","Trebuchet MS",Impact,sans-serif;
+  --body:"Baloo 2",ui-rounded,"SF Pro Rounded","Segoe UI",system-ui,sans-serif;
+  --outline:3px 3px 0 var(--ink),-3px 3px 0 var(--ink),3px -3px 0 var(--ink),-3px -3px 0 var(--ink),0 3px 0 var(--ink),0 -3px 0 var(--ink),3px 0 0 var(--ink),-3px 0 0 var(--ink),0 7px 0 var(--ink);
+  --outline-sm:2px 2px 0 var(--ink),-2px 2px 0 var(--ink),2px -2px 0 var(--ink),-2px -2px 0 var(--ink),0 4px 0 var(--ink);
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+body[data-look="evergreen"]{--bg:#25935a;--pop:#25935a;--pop2:#ffc93c;--soft:#ebf8ef;--pat:radial-gradient(var(--bg2) 3px,transparent 3.6px);--patsize:30px 30px}
+body[data-look="frost"]{--bg:#3a74dc;--pop:#3a74dc;--pop2:#8fe3ff;--soft:#eaf2ff;--pat:radial-gradient(var(--bg2) 3px,transparent 3.6px);--patsize:26px 26px}
+body[data-look="ginger"]{--bg:#c06a31;--pop:#c06a31;--pop2:#ff9cba;--soft:#fdf0e6;--pat:repeating-linear-gradient(45deg,transparent 0 22px,var(--bg2) 22px 30px)}
+body[data-look="plum"]{--bg:#8549d4;--pop:#8549d4;--pop2:#ffd23f;--soft:#f3ebff;--pat:radial-gradient(var(--bg2) 4px,transparent 4.6px);--patsize:36px 36px}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;font-family:var(--body);font-size:17px;line-height:1.45;color:var(--ink);background-color:var(--bg);background-image:var(--pat);background-size:var(--patsize);background-attachment:fixed;transition:background-color .5s ease;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit}
+img,svg{max-width:100%}
+#snow,#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#snow{z-index:0}
+#fx{z-index:90}
+#app{position:relative;z-index:1;max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 130px}
+#view{display:flex;flex-direction:column;gap:20px}
+
+h1,h2,h3{font-family:var(--display);font-weight:400;letter-spacing:.6px;margin:0;line-height:1.02;text-wrap:balance}
+h2{font-size:25px}
+h3{font-size:19px}
+p{margin:0}
+.small{font-size:14.5px;color:var(--muted);font-weight:600}
+.title{font-family:var(--display);font-weight:400;letter-spacing:.6px;line-height:1.02;margin:0;color:#fff;text-shadow:var(--outline);font-size:clamp(36px,10vw,50px);overflow-wrap:anywhere}
+.title.big{font-size:clamp(56px,17vw,86px);line-height:.9}
+.onbg{color:#fff;font-weight:700;text-shadow:0 2px 0 rgba(33,29,59,.45)}
+.kicker{font-size:15px;text-transform:uppercase;letter-spacing:1.5px}
+
+/* stickers */
+.card{background:var(--paper);border:3px solid var(--ink);border-radius:24px;box-shadow:0 6px 0 var(--ink);padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.center{align-items:center;text-align:center}
+.card.subtle{background:rgba(255,255,255,.92)}
+.card.demo{background:#fff8d6}
+.card-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.tilt-l{transform:rotate(-1.2deg)}
+.tilt-r{transform:rotate(1deg)}
+
+.btn{font-family:var(--display);font-size:19px;letter-spacing:.6px;line-height:1.1;color:var(--ink);background:var(--pop2);border:3px solid var(--ink);border-radius:16px;padding:12px 18px;box-shadow:0 5px 0 var(--ink);cursor:pointer;transition:transform .08s,box-shadow .08s,filter .15s;text-align:center;touch-action:manipulation}
+.btn:hover{filter:brightness(1.05)}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.btn.big{font-size:23px;padding:15px 20px}
+.btn.white{background:#fff}
+.btn.red{background:var(--pop);color:#fff;text-shadow:var(--outline-sm)}
+.btn.gold{background:var(--gold)}
+.btn.ghost{background:transparent;box-shadow:none;border-style:dashed;font-size:16px}
+.btn.ghost:active{transform:none}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:0 5px 0 var(--ink)}
+.btn-row{display:flex;flex-wrap:wrap;gap:12px}
+.btn-row>.btn{flex:1 1 150px}
+.chip{font-family:var(--body);font-weight:800;font-size:14px;line-height:1.2;background:#fff;color:var(--ink);border:2.5px solid var(--ink);border-radius:999px;padding:5px 12px;box-shadow:0 3px 0 var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.chip:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.tag{font-style:normal;font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;border:2px solid var(--ink);border-radius:999px;padding:1px 8px;background:var(--line);color:var(--ink);white-space:nowrap}
+.tag.ok{background:var(--pop2)}
+.tag.host{background:var(--gold)}
+:focus-visible{outline:3px dashed var(--ink);outline-offset:3px}
+.btn:focus-visible,.chip:focus-visible{outline-color:#fff}
+
+/* forms */
+.field{display:flex;flex-direction:column;gap:6px;font-weight:800;font-size:15.5px}
+.field .hint{font-weight:600;font-size:14px;color:var(--muted)}
+input[type=text],input[type=number],input[type=datetime-local],textarea,select{font:inherit;font-weight:600;font-size:17px;color:var(--ink);background:var(--soft);border:3px solid var(--ink);border-radius:14px;padding:10px 12px;width:100%;min-width:0;appearance:none;-webkit-appearance:none}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);background-position:calc(100% - 20px) 55%,calc(100% - 14px) 55%;background-size:6px 6px;background-repeat:no-repeat;padding-right:34px}
+textarea{resize:vertical;min-height:84px;line-height:1.4}
+input::placeholder,textarea::placeholder{color:#9b94b3;font-weight:500}
+input:focus,textarea:focus,select:focus{outline:3px solid var(--pop2);outline-offset:2px}
+.money{display:flex;align-items:center;gap:8px}
+.money b{font-family:var(--display);font-size:26px}
+.money input{max-width:140px}
+.codeinput{font-family:var(--display)!important;font-size:34px!important;letter-spacing:8px;text-align:center;text-transform:uppercase}
+
+/* avatars */
+.av{display:inline-block;width:var(--s,56px);height:var(--s,56px);border:3px solid var(--ink);border-radius:30%;overflow:hidden;background:#fff;flex:none;box-shadow:0 3px 0 var(--ink)}
+.av svg{display:block;width:100%;height:100%}
+.av.big{border-width:4px;box-shadow:0 6px 0 var(--ink)}
+.bob{animation:bob 3.2s ease-in-out infinite;display:inline-block}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-9px) rotate(3deg)}}
+
+/* hero */
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding-top:10px}
+.hero .lede{max-width:30ch;font-size:18px}
+.room-hero,.giftee-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding-top:4px}
+.demo-banner{background:#fff8d6;border:3px dashed var(--ink);border-radius:18px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;font-weight:600;font-size:15.5px}
+.demo-banner b{font-family:var(--display);font-weight:400;font-size:18px;letter-spacing:.5px;display:block}
+.demo-banner .btn{font-size:15px;padding:7px 12px;box-shadow:0 3px 0 var(--ink);flex:none}
+
+.topbar{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.topbar .chip{background:#fff}
+.code-chip{font-family:var(--display);font-weight:400;letter-spacing:2px;font-size:16px}
+
+/* rooms list */
+.rooms{display:flex;flex-direction:column;gap:10px}
+.roomrow{display:flex;align-items:center;gap:12px;background:var(--soft);border:3px solid var(--ink);border-radius:18px;padding:10px 12px;cursor:pointer;text-align:left;width:100%;box-shadow:0 4px 0 var(--ink)}
+.roomrow:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.roomrow .meta{flex:1;min-width:0;display:flex;flex-direction:column}
+.roomrow .meta b{font-family:var(--display);font-weight:400;font-size:20px;letter-spacing:.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty{color:var(--muted);font-weight:600}
+.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:38px 1fr;gap:10px;align-items:start;font-weight:600}
+.steps li::before{content:counter(s);font-family:var(--display);font-size:20px;width:38px;height:38px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:50%;background:var(--gold);box-shadow:0 3px 0 var(--ink);line-height:1;padding-top:3px}
+.steps b{font-weight:800}
+
+/* theme picker */
+.looks{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.look{background:var(--c);border:3px solid var(--ink);border-radius:16px;padding:6px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;box-shadow:0 4px 0 var(--ink);color:#fff;font-weight:800;font-size:11.5px;text-shadow:0 1px 0 var(--ink);min-width:0}
+.look .av{--s:44px;box-shadow:none;border-width:2.5px}
+.look.on{outline:4px solid var(--ink);outline-offset:2px;transform:translateY(-2px)}
+.look span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-inline:2px}
+
+/* phase track */
+.track{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:nowrap}
+.track .st{font-weight:800;font-size:13px;background:rgba(255,255,255,.35);color:var(--ink);border:2.5px solid var(--ink);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.track .st.done{background:#fff}
+.track .st.now{background:var(--gold);box-shadow:0 3px 0 var(--ink)}
+.track .ln{width:16px;height:3px;background:var(--ink);flex:none}
+
+/* countdown */
+.cd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cd>div{background:var(--pop);color:#fff;border:3px solid var(--ink);border-radius:16px;text-align:center;padding:8px 0 4px;box-shadow:0 4px 0 var(--ink)}
+.cd b{font-family:var(--display);font-weight:400;font-size:clamp(28px,8vw,38px);display:block;line-height:1;text-shadow:var(--outline-sm);font-variant-numeric:tabular-nums}
+.cd small{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:1px}
+.cd-now{grid-column:1/-1;font-family:var(--display);font-size:24px;text-align:center}
+
+/* crew */
+.meter{height:16px;border:3px solid var(--ink);border-radius:999px;background:var(--soft);overflow:hidden}
+.meter i{display:block;height:100%;background:repeating-linear-gradient(135deg,var(--pop) 0 10px,#fff 10px 20px);border-right:3px solid var(--ink);transition:width .6s}
+.crew{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+.crewmate{background:none;border:0;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;border-radius:16px;min-width:0}
+.crewmate:hover{background:var(--soft)}
+.crewmate .nm{font-weight:800;font-size:15px;line-height:1.15;text-align:center;overflow-wrap:anywhere}
+.crewmate .tags{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.codebig{font-family:var(--display);font-size:clamp(38px,12vw,54px);letter-spacing:8px;text-align:center;background:var(--soft);border:3px dashed var(--ink);border-radius:18px;padding:10px 0 4px}
+
+/* rx pad */
+.rx{background:#fff;display:flex;flex-direction:column;gap:12px}
+.rx-top{display:flex;gap:12px;align-items:center;border-bottom:3px solid var(--ink);padding-bottom:10px}
+.rx-logo{font-family:var(--display);font-size:38px;line-height:1;width:58px;height:58px;display:grid;place-items:center;flex:none;background:var(--pop);color:#fff;border:3px solid var(--ink);border-radius:50%;text-shadow:var(--outline-sm);padding-top:4px;box-shadow:0 3px 0 var(--ink)}
+.rx dl{margin:0;display:flex;flex-direction:column;gap:10px}
+.rx dt{font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--pop)}
+.rx dd{margin:0;font-weight:600;border-bottom:2px dashed var(--line);padding-bottom:8px;overflow-wrap:anywhere}
+.rx dd.blank{color:#a7a0bd;font-style:italic}
+.rx-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sig-line{font-family:var(--display);font-size:17px;color:var(--muted);border-top:2px solid var(--ink);padding-top:4px;letter-spacing:.5px}
+.rxsheet{background:#fff;border:3px solid var(--ink);border-radius:20px 20px 20px 20px;box-shadow:0 6px 0 var(--ink);padding:18px;display:flex;flex-direction:column;gap:14px;background-image:linear-gradient(transparent 0 0);position:relative}
+.rxsheet::before{content:"";position:absolute;left:18px;right:18px;top:-11px;height:16px;background:radial-gradient(circle at 8px 8px,var(--ink) 4px,transparent 4.5px) 0 0/26px 16px repeat-x}
+.rx-form{display:flex;flex-direction:column;gap:14px}
+
+/* builder */
+.preview{display:flex;flex-direction:column;align-items:center;gap:8px}
+.preview .nm{font-family:var(--display);font-size:26px;color:#fff;text-shadow:var(--outline-sm);min-height:30px}
+.grid8{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.opt{background:var(--soft);border:3px solid var(--ink);border-radius:18px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;font-weight:800;font-size:12.5px;min-width:0}
+.opt .av{--s:54px;box-shadow:none;border-width:2.5px}
+.opt.on{background:var(--gold);box-shadow:0 4px 0 var(--ink);transform:translateY(-2px)}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.sw{width:44px;height:44px;border-radius:50%;border:3px solid var(--ink);background:var(--c);cursor:pointer;box-shadow:0 3px 0 var(--ink)}
+.sw.on{outline:4px solid var(--ink);outline-offset:3px}
+.accs{display:flex;gap:8px;flex-wrap:wrap}
+.accs .chip.on{background:var(--gold)}
+
+/* recover pick */
+.pickgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px}
+.pick{background:var(--soft);border:3px solid var(--ink);border-radius:18px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;font-weight:800;font-size:14px;min-width:0;overflow-wrap:anywhere;text-align:center}
+.pick .av{--s:56px;box-shadow:none}
+.pick.on{background:var(--gold);box-shadow:0 4px 0 var(--ink);transform:translateY(-2px) rotate(-2deg)}
+.pick:disabled{opacity:.45;cursor:not-allowed}
+
+/* gift */
+.giftbtn{background:none;border:0;padding:0;cursor:pointer;width:min(250px,68vw);display:block;margin:4px auto 0}
+.giftbtn svg{width:100%;height:auto;overflow:visible;display:block}
+.giftbtn .lid{transform-box:fill-box;transform-origin:50% 100%;transition:transform .7s cubic-bezier(.3,1.5,.5,1),opacity .5s .25s}
+.giftbtn.open .lid{transform:translate(40px,-150px) rotate(32deg);opacity:0}
+.giftbtn.shake{animation:shake .5s ease}
+.idle-wiggle{animation:wiggle 2.6s ease-in-out infinite}
+@keyframes wiggle{0%,80%,100%{transform:rotate(0)}84%{transform:rotate(-5deg)}88%{transform:rotate(5deg)}92%{transform:rotate(-3deg)}96%{transform:rotate(2deg)}}
+@keyframes shake{0%,100%{transform:rotate(0) scale(1)}20%{transform:rotate(-9deg) scale(1.05)}40%{transform:rotate(8deg) scale(1.08)}60%{transform:rotate(-6deg) scale(1.05)}80%{transform:rotate(4deg)}}
+.taps{font-family:var(--display);font-size:20px;color:#fff;text-shadow:var(--outline-sm);letter-spacing:.5px}
+
+/* overlay */
+#overlay{position:fixed;inset:0;z-index:70;background:rgba(33,29,59,.95);display:grid;place-items:center;padding:calc(20px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));overflow-y:auto}
+.ov-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;max-width:420px;width:100%}
+.ov-title{font-size:clamp(30px,9vw,44px)}
+.pop-in{animation:popin .6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes popin{0%{transform:scale(.3) translateY(60px)}100%{transform:scale(1) translateY(0)}}
+.sackwrap{position:relative;width:240px;height:240px}
+.sack{position:absolute;inset:0}
+.sack svg{width:100%;height:100%;overflow:visible}
+.sack.go{animation:shake .45s ease-in-out infinite}
+.flyer{position:absolute;left:50%;top:40%;margin:-27px 0 0 -27px;animation:fly .9s cubic-bezier(.5,0,.8,.4) both;animation-delay:var(--d)}
+.flyer .av{--s:54px}
+@keyframes fly{0%{transform:translate(var(--x),var(--y)) scale(1) rotate(0)}100%{transform:translate(0,10px) scale(.15) rotate(360deg);opacity:0}}
+
+/* modal */
+#modal .back{position:fixed;inset:0;z-index:60;background:rgba(33,29,59,.6);display:flex;align-items:flex-end;justify-content:center;padding:calc(16px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px))}
+#modal .sheet{width:100%;max-width:540px;max-height:88vh;overflow-y:auto;border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:0;padding-bottom:calc(22px + env(safe-area-inset-bottom,0px));animation:sheetup .3s cubic-bezier(.3,1.3,.5,1)}
+@keyframes sheetup{0%{transform:translateY(60%)}100%{transform:translateY(0)}}
+@media (min-width:700px){#modal .back{align-items:center;padding-bottom:16px}#modal .sheet{border-radius:24px;border-bottom:3px solid var(--ink)}}
+.x{position:sticky;top:0;align-self:flex-end;margin:-6px -6px -40px 0;width:38px;height:38px;border-radius:50%;border:3px solid var(--ink);background:#fff;font-weight:800;font-size:18px;cursor:pointer;box-shadow:0 3px 0 var(--ink);line-height:1;z-index:2}
+.keybox{font-family:var(--display);font-size:clamp(22px,7vw,30px);letter-spacing:2px;text-align:center;background:var(--gold);border:3px solid var(--ink);border-radius:16px;padding:14px 8px 8px;box-shadow:0 4px 0 var(--ink);overflow-wrap:anywhere;user-select:all}
+.pairs{display:flex;flex-direction:column;gap:8px}
+.pairrow{display:flex;align-items:center;gap:8px;background:var(--soft);border:2.5px solid var(--ink);border-radius:14px;padding:6px 8px;font-weight:700}
+.pairrow .av{--s:34px;box-shadow:none;border-width:2px}
+.pairrow .grow{flex:1}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* mail */
+.seg{display:grid;grid-template-columns:1fr 1fr;background:#fff;border:3px solid var(--ink);border-radius:18px;padding:4px;gap:4px;box-shadow:0 5px 0 var(--ink)}
+.seg button{border:0;background:transparent;border-radius:13px;padding:9px 6px;font-weight:800;font-size:15px;cursor:pointer;position:relative;line-height:1.15}
+.seg button.on{background:var(--pop);color:#fff;text-shadow:0 1px 0 var(--ink)}
+.seg .dot{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--gold);color:var(--ink);border:2px solid var(--ink);font-size:11px;margin-left:4px;text-shadow:none;vertical-align:1px}
+.thread{display:flex;flex-direction:column;gap:12px;max-height:56vh;min-height:180px;overflow-y:auto;padding:4px 2px 8px;scroll-behavior:auto}
+.who-line{display:flex;align-items:center;gap:10px;border-bottom:3px dashed var(--line);padding-bottom:10px}
+.who-line .av{--s:46px}
+.msg{display:flex;gap:8px;align-items:flex-end;max-width:88%}
+.msg .av{--s:34px;box-shadow:none;border-width:2px}
+.msg.me{align-self:flex-end;flex-direction:row-reverse}
+.bubble{background:var(--soft);border:2.5px solid var(--ink);border-radius:18px 18px 18px 6px;padding:8px 12px;font-weight:600;overflow-wrap:anywhere;min-width:0}
+.msg.me .bubble{background:var(--pop);color:#fff;border-radius:18px 18px 6px 18px}
+.bubble time{display:block;font-size:11.5px;font-weight:700;opacity:.7;margin-top:2px}
+.hintcard{align-self:center;width:94%;background:var(--gold);border:3px solid var(--ink);border-radius:6px;padding:12px 14px 10px;box-shadow:0 4px 0 var(--ink);transform:rotate(-1.2deg);font-weight:700;position:relative;overflow-wrap:anywhere}
+.hintcard:nth-child(even){transform:rotate(1deg)}
+.hintcard .ht{font-family:var(--display);font-weight:400;font-size:15px;letter-spacing:.6px;display:block;margin-bottom:2px}
+.hintcard time{font-size:11.5px;opacity:.7;display:block}
+.compose{display:flex;flex-direction:column;gap:10px;border-top:3px solid var(--ink);padding-top:12px}
+.compose .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-weight:800;cursor:pointer;user-select:none}
+.toggle input{appearance:none;-webkit-appearance:none;width:50px;height:30px;border-radius:999px;border:3px solid var(--ink);background:var(--line);position:relative;cursor:pointer;transition:background .2s;margin:0}
+.toggle input::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;border:2.5px solid var(--ink);transition:transform .2s}
+.toggle input:checked{background:var(--gold)}
+.toggle input:checked::after{transform:translateX(20px)}
+.starters{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:thin}
+.starters .chip{box-shadow:0 2px 0 var(--ink);font-size:13px}
+
+/* reveal */
+.flip{width:min(240px,64vw);aspect-ratio:3/4;max-width:100%;perspective:900px;cursor:pointer;background:none;border:0;padding:0;margin:0 auto}
+.flip .in{position:relative;width:100%;height:100%;transition:transform .9s cubic-bezier(.3,1.3,.5,1);transform-style:preserve-3d}
+.flip.flipped .in{transform:rotateY(180deg)}
+.flip .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:4px solid var(--ink);border-radius:22px;box-shadow:0 6px 0 var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:14px}
+.flip .front{background:repeating-linear-gradient(45deg,var(--pop) 0 16px,#fff 16px 32px)}
+.flip .front span{font-family:var(--display);font-size:22px;background:#fff;border:3px solid var(--ink);border-radius:12px;padding:6px 10px 2px}
+.flip .back{background:var(--gold);transform:rotateY(180deg)}
+.flip .back b{font-family:var(--display);font-weight:400;font-size:28px;overflow-wrap:anywhere}
+.chain{display:flex;flex-direction:column;gap:8px}
+.link{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:var(--soft);border:2.5px solid var(--ink);border-radius:16px;padding:8px}
+.link .p{display:flex;align-items:center;gap:8px;font-weight:800;min-width:0;overflow-wrap:anywhere;font-size:15px}
+.link .p:last-child{justify-content:flex-end;text-align:right;flex-direction:row-reverse}
+.link .av{--s:36px;box-shadow:none;border-width:2px}
+.link .arrow{font-family:var(--display);font-size:22px;color:var(--pop)}
+.board{display:flex;flex-direction:column;gap:8px}
+.brow{display:flex;align-items:center;gap:10px;font-weight:700;border-bottom:2px dashed var(--line);padding-bottom:8px}
+.brow .av{--s:38px;box-shadow:none;border-width:2px}
+.brow .grow{flex:1;min-width:0}
+.brow .tag{flex:none}
+.idea{font-family:var(--display);font-size:22px;line-height:1.15;letter-spacing:.4px;min-height:52px;display:flex;align-items:center;background:var(--soft);border:3px dashed var(--ink);border-radius:16px;padding:10px 14px 6px}
+.idea.spinning{color:var(--pop)}
+
+/* tabs */
+#tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;border-top:3px solid var(--ink);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));display:flex;justify-content:center}
+#tabs .inner{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:560px;gap:4px}
+.tab{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:1px;font-weight:800;font-size:12.5px;color:var(--muted);padding:6px 2px 4px;border-radius:14px;position:relative;cursor:pointer}
+.tab svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:var(--ink);background:var(--soft)}
+.tab.on svg{color:var(--pop);stroke-width:2.6}
+.tab .badge{position:absolute;top:1px;left:calc(50% + 6px);background:var(--pop);color:#fff;border:2px solid var(--ink);border-radius:999px;font-size:11px;min-width:20px;height:20px;display:grid;place-items:center;padding:0 5px;line-height:1}
+
+#toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);opacity:0;z-index:95;background:var(--ink);color:#fff;font-weight:800;padding:10px 18px;border-radius:999px;border:3px solid #fff;transition:transform .25s,opacity .25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
+#toast.show{transform:translate(-50%,0);opacity:1}
+.fresh .enter{animation:popin .55s cubic-bezier(.3,1.5,.5,1) both}
+.spin{display:inline-block;width:18px;height:18px;border:3px solid currentColor;border-right-color:transparent;border-radius:50%;animation:rot .8s linear infinite;vertical-align:-3px}
+@keyframes rot{to{transform:rotate(360deg)}}
+.loading{display:grid;place-items:center;gap:14px;padding:60px 0;text-align:center}
+.guide ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-weight:600}
+.guide code{background:var(--soft);border:2px solid var(--line);border-radius:6px;padding:0 5px;font-size:14px;overflow-wrap:anywhere}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+
+<canvas id="snow" aria-hidden="true"></canvas>
+<div id="app"><main id="view" aria-live="polite"></main></div>
+<nav id="tabs" hidden aria-label="Room sections"></nav>
+<div id="modal"></div>
+<div id="overlay" hidden role="dialog" aria-modal="true"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div id="toast" role="status"></div>
+<script src="config.js"></script>
+<script>
+(() => {
+'use strict';
+
+/* ================= setup ================= */
+const CFG = window.SANTA_FIREBASE_CONFIG;
+const LIVE = !!(CFG && CFG.apiKey && CFG.projectId);
+const NS = LIVE ? 'sr1-' : 'sr1-demo-';
+const MEM = {};
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(NS + k); if (v != null) return JSON.parse(v); } catch (e) {} return k in MEM ? JSON.parse(JSON.stringify(MEM[k])) : d; },
+  set(k, v) { MEM[k] = JSON.parse(JSON.stringify(v)); try { localStorage.setItem(NS + k, JSON.stringify(v)); } catch (e) {} }
+};
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nl = s => esc(s).replace(/\n/g, '<br>');
+const rnd = () => crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296;
+const pick = a => a[Math.floor(rnd() * a.length)];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function rid(n = 16, a = 'abcdefghijkmnpqrstuvwxyz23456789') { const b = crypto.getRandomValues(new Uint8Array(n)); let s = ''; for (const x of b) s += a[x % a.length]; return s; }
+function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const CODE_ALPH = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const pairKey = (a, b) => [a, b].sort().join('|');
+
+/* ================= crypto ================= */
+const te = new TextEncoder(), td = new TextDecoder();
+const b64 = buf => { const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const EC = { name: 'ECDH', namedCurve: 'P-256' };
+async function genKeys() {
+  const kp = await crypto.subtle.generateKey(EC, true, ['deriveKey']);
+  const priv = await crypto.subtle.exportKey('jwk', kp.privateKey);
+  const pub = await crypto.subtle.exportKey('jwk', kp.publicKey);
+  return { priv: { kty: priv.kty, crv: priv.crv, x: priv.x, y: priv.y, d: priv.d }, pub: { x: pub.x, y: pub.y } };
+}
+const importPub = p => crypto.subtle.importKey('jwk', { kty: 'EC', crv: 'P-256', x: p.x, y: p.y, ext: true }, EC, false, []);
+const importPriv = j => crypto.subtle.importKey('jwk', { kty: 'EC', crv: 'P-256', x: j.x, y: j.y, d: j.d, ext: true }, EC, false, ['deriveKey']);
+async function seal(pub, obj) {
+  const pk = await importPub(pub);
+  const eph = await crypto.subtle.generateKey(EC, true, ['deriveKey']);
+  const k = await crypto.subtle.deriveKey({ name: 'ECDH', public: pk }, eph.privateKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, te.encode(JSON.stringify(obj)));
+  const e = await crypto.subtle.exportKey('jwk', eph.publicKey);
+  return { ex: e.x, ey: e.y, iv: b64(iv), ct: b64(ct) };
+}
+async function unseal(privJwk, s) {
+  const priv = await importPriv(privJwk);
+  const epk = await importPub({ x: s.ex, y: s.ey });
+  const k = await crypto.subtle.deriveKey({ name: 'ECDH', public: epk }, priv, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(s.iv) }, k, unb64(s.ct));
+  return JSON.parse(td.decode(pt));
+}
+const AES = new Map();
+async function aesKey(b) { if (!AES.has(b)) AES.set(b, crypto.subtle.importKey('raw', unb64(b), 'AES-GCM', false, ['encrypt', 'decrypt'])); return AES.get(b); }
+async function encObj(kb, obj) { const k = await aesKey(kb); const iv = crypto.getRandomValues(new Uint8Array(12)); const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, te.encode(JSON.stringify(obj))); return { iv: b64(iv), ct: b64(ct) }; }
+async function decObj(kb, m) { const k = await aesKey(kb); const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(m.iv) }, k, unb64(m.ct)); return JSON.parse(td.decode(pt)); }
+const normKey = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+async function passKey(pass, salt) {
+  const base = await crypto.subtle.importKey('raw', te.encode(normKey(pass)), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 150000, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function wrapPriv(jwk, pass) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const k = await passKey(pass, salt);
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, te.encode(JSON.stringify(jwk)));
+  return { salt: b64(salt), iv: b64(iv), ct: b64(ct) };
+}
+async function unwrapPriv(w, pass) {
+  const k = await passKey(pass, unb64(w.salt));
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(w.iv) }, k, unb64(w.ct));
+  return JSON.parse(td.decode(pt));
+}
+const W1 = ['TINSEL','COCOA','SLEIGH','HOLLY','FROSTY','GINGER','MITTEN','JINGLE','SPRUCE','CANDY','WREATH','COMET','VIXEN','CIDER','IGLOO','PLUM','NUTMEG','MAPLE','TOFFEE','CAROL','SNOWY','FUDGE','BLIZZ','PEPPER','SPARK','GLITTER','MERRY','TWINKLE','CRISP','BRRR','SCARF','CHIMNEY'];
+const W2 = ['NARWHAL','OTTER','WALRUS','PUFFIN','YETI','BADGER','MOOSE','LLAMA','PANDA','KOALA','BISON','ORCA','PENGUIN','BEAVER','FERRET','LYNX','NEURON','AORTA','FEMUR','TIBIA','CORTEX','PLASMA','ENZYME','SUTURE','SCALPEL','PULSE','RIBOSOME','ALVEOLI','PATELLA','HUMERUS','VAGUS','KIDNEY'];
+const makeSleighKey = () => `${pick(W1)}-${pick(W2)}-${1000 + Math.floor(rnd() * 9000)}`;
+
+/* ================= backends ================= */
+function MockBackend() {
+  let data = LS.get('db', {});
+  const docL = new Map(), colL = new Map();
+  const par = p => p.slice(0, p.lastIndexOf('/'));
+  const clone = o => o == null ? null : JSON.parse(JSON.stringify(o));
+  const list = c => Object.keys(data).filter(p => par(p) === c).map(p => ({ id: p.slice(p.lastIndexOf('/') + 1), ...clone(data[p]) }));
+  const persist = () => LS.set('db', data);
+  const fire = p => setTimeout(() => {
+    (docL.get(p) || []).forEach(cb => cb(clone(data[p] ?? null)));
+    const c = par(p); (colL.get(c) || []).forEach(cb => cb(list(c)));
+  }, 0);
+  const on = (m, k, cb) => { if (!m.has(k)) m.set(k, new Set()); m.get(k).add(cb); return () => m.get(k).delete(cb); };
+  const api = {
+    live: false,
+    async init() {},
+    watchDoc(p, cb) { let on1 = true; const off = on(docL, p, cb); setTimeout(() => on1 && cb(clone(data[p] ?? null)), 0); return () => { on1 = false; off(); }; },
+    watchCol(c, cb) { let on1 = true; const off = on(colL, c, cb); setTimeout(() => on1 && cb(list(c)), 0); return () => { on1 = false; off(); }; },
+    async get(p) { return clone(data[p] ?? null); },
+    async getCol(c) { return list(c); },
+    async set(p, o) { data[p] = clone(o); persist(); fire(p); },
+    async merge(p, o) { data[p] = { ...(data[p] || {}), ...clone(o) }; persist(); fire(p); },
+    async del(p) { delete data[p]; persist(); fire(p); },
+    async add(c, o) { const id = rid(18); await api.set(c + '/' + id, o); return id; },
+    async batch(ops) {
+      for (const [t, p, o] of ops) { if (t === 'set') data[p] = clone(o); else if (t === 'merge') data[p] = { ...(data[p] || {}), ...clone(o) }; else delete data[p]; }
+      persist(); ops.forEach(op => fire(op[1]));
+    },
+    reset() { data = {}; persist(); }
+  };
+  return api;
+}
+
+function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('Could not load ' + src)); document.head.appendChild(s); }); }
+function FireBackend(cfg) {
+  let db; let warned = false;
+  const oops = e => { console.warn(e); if (!warned) { warned = true; toast('Lost the North Pole signal. Retrying…'); setTimeout(() => warned = false, 15000); } };
+  const docs = qs => qs.docs.map(d => ({ id: d.id, ...d.data() }));
+  return {
+    live: true,
+    async init() {
+      const V = '10.12.2', base = `https://www.gstatic.com/firebasejs/${V}/`;
+      await loadScript(base + 'firebase-app-compat.js');
+      await Promise.all([loadScript(base + 'firebase-auth-compat.js'), loadScript(base + 'firebase-firestore-compat.js')]);
+      firebase.initializeApp(cfg);
+      await firebase.auth().signInAnonymously();
+      db = firebase.firestore();
+    },
+    watchDoc(p, cb) { return db.doc(p).onSnapshot(s => cb(s.exists ? s.data() : null), oops); },
+    watchCol(c, cb) { return db.collection(c).onSnapshot(qs => cb(docs(qs)), oops); },
+    async get(p) { const s = await db.doc(p).get(); return s.exists ? s.data() : null; },
+    async getCol(c) { return docs(await db.collection(c).get()); },
+    set: (p, o) => db.doc(p).set(o),
+    merge: (p, o) => db.doc(p).set(o, { merge: true }),
+    del: p => db.doc(p).delete(),
+    async add(c, o) { return (await db.collection(c).add(o)).id; },
+    async batch(ops) {
+      for (let i = 0; i < ops.length; i += 400) {
+        const b = db.batch();
+        ops.slice(i, i + 400).forEach(([t, p, o]) => t === 'set' ? b.set(db.doc(p), o) : t === 'merge' ? b.set(db.doc(p), o, { merge: true }) : b.delete(db.doc(p)));
+        await b.commit();
+      }
+    }
+  };
+}
+let B;
+
+/* ================= art ================= */
+const K = '#211d3b';
+const st = (w = 3) => `stroke="${K}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
+const EYES = (y = 54, dx = 9) => `<circle cx="${50 - dx}" cy="${y}" r="3.8" fill="${K}"/><circle cx="${50 + dx}" cy="${y}" r="3.8" fill="${K}"/><circle cx="${51.4 - dx}" cy="${y - 1.4}" r="1.3" fill="#fff"/><circle cx="${51.4 + dx}" cy="${y - 1.4}" r="1.3" fill="#fff"/>`;
+const SMILE = (y = 66, w = 6, c = K) => `<path d="M${50 - w} ${y} Q50 ${y + 7} ${50 + w} ${y}" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round"/>`;
+const CHEEKS = (y = 63, dx = 16) => `<ellipse cx="${50 - dx}" cy="${y}" rx="4.5" ry="3" fill="#ff7f98" opacity=".75"/><ellipse cx="${50 + dx}" cy="${y}" rx="4.5" ry="3" fill="#ff7f98" opacity=".75"/>`;
+const ANTLER = 'M37 37 C34 27 30 22 25 15 M31 28 C26 27 22 27 17 24 M63 37 C66 27 70 22 75 15 M69 28 C74 27 78 27 83 24';
+const CH = {
+  reindeer: () => `<path d="${ANTLER}" fill="none" stroke="${K}" stroke-width="9" stroke-linecap="round"/><path d="${ANTLER}" fill="none" stroke="#8a5a32" stroke-width="4.2" stroke-linecap="round"/>
+    <ellipse cx="25" cy="47" rx="10" ry="5.5" transform="rotate(-28 25 47)" fill="#b57843" ${st()}/><ellipse cx="75" cy="47" rx="10" ry="5.5" transform="rotate(28 75 47)" fill="#b57843" ${st()}/>
+    <ellipse cx="50" cy="61" rx="24" ry="26" fill="#c28650" ${st()}/><ellipse cx="50" cy="73" rx="14" ry="10" fill="#efcfa6" ${st()}/>
+    ${EYES(54, 9)}<circle cx="50" cy="66" r="6.5" fill="#ff3b4f" ${st()}/><circle cx="48" cy="64" r="1.8" fill="#fff"/>${SMILE(75, 5)}`,
+  snowman: () => `<circle cx="50" cy="60" r="27" fill="#fbfdff" ${st()}/>${EYES(53, 9)}${CHEEKS(63, 15)}
+    <path d="M50 59.5 L72 64 L50 67 Z" fill="#ff8a3d" ${st(2.5)}/>
+    <circle cx="38" cy="72" r="2.1" fill="${K}"/><circle cx="43.5" cy="75.6" r="2.1" fill="${K}"/><circle cx="50" cy="76.8" r="2.1" fill="${K}"/><circle cx="56.5" cy="75.6" r="2.1" fill="${K}"/><circle cx="62" cy="72" r="2.1" fill="${K}"/>`,
+  ginger: () => `<circle cx="50" cy="60" r="27" fill="#c8783a" ${st()}/><circle cx="50" cy="60" r="21.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-dasharray="3 4.6" stroke-linecap="round"/>
+    ${EYES(54, 8.5)}${CHEEKS(63, 13)}${SMILE(66, 6, '#fff')}`,
+  penguin: () => `<ellipse cx="50" cy="60" rx="28" ry="28" fill="#2d3a5e" ${st()}/>
+    <path d="M50 46 C42 37 27 42 29 58 C31 75 43 82 50 82 C57 82 69 75 71 58 C73 42 58 37 50 46 Z" fill="#fff" ${st(2.5)}/>
+    ${EYES(56, 9)}${CHEEKS(65, 15)}<path d="M44 63 L56 63 L50 71 Z" fill="#ffb02e" ${st(2.5)}/>`,
+  elf: () => `<path d="M29 56 L8 44 L30 68 Z" fill="#f2c09a" ${st()}/><path d="M71 56 L92 44 L70 68 Z" fill="#f2c09a" ${st()}/>
+    <circle cx="50" cy="60" r="25" fill="#f6cfab" ${st()}/><path d="M40 38 Q45 30 50 37 Q55 30 60 38" fill="#e0763a" ${st(2.5)}/>
+    ${EYES(56, 9)}${CHEEKS(65, 15)}<circle cx="37" cy="61" r="1.1" fill="#b5653a"/><circle cx="34" cy="64" r="1.1" fill="#b5653a"/><circle cx="63" cy="61" r="1.1" fill="#b5653a"/><circle cx="66" cy="64" r="1.1" fill="#b5653a"/>
+    <path d="M42 67 Q50 77 58 67 Z" fill="#fff" ${st(2.5)}/>`,
+  bear: () => `<circle cx="30" cy="38" r="9" fill="#f6f4ee" ${st()}/><circle cx="30" cy="38" r="4" fill="#ffb3c4"/><circle cx="70" cy="38" r="9" fill="#f6f4ee" ${st()}/><circle cx="70" cy="38" r="4" fill="#ffb3c4"/>
+    <circle cx="50" cy="60" r="26" fill="#f6f4ee" ${st()}/><ellipse cx="50" cy="69" rx="12" ry="9" fill="#fff" ${st(2.5)}/><ellipse cx="50" cy="65" rx="5" ry="3.6" fill="${K}"/>
+    ${EYES(54, 10)}${SMILE(71, 4)}`,
+  owl: () => `<path d="M30 43 L27 24 L42 35 Z" fill="#8f6b4f" ${st()}/><path d="M70 43 L73 24 L58 35 Z" fill="#8f6b4f" ${st()}/>
+    <ellipse cx="50" cy="60" rx="27" ry="27" fill="#a5805f" ${st()}/>
+    <path d="M36 75 Q40 79 44 75 M46 79 Q50 83 54 79 M56 75 Q60 79 64 75" fill="none" stroke="#7a5a42" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="39" cy="55" r="10" fill="#fff" ${st()}/><circle cx="61" cy="55" r="10" fill="#fff" ${st()}/>
+    <circle cx="40" cy="56" r="4.5" fill="${K}"/><circle cx="62" cy="56" r="4.5" fill="${K}"/><circle cx="41.5" cy="54.5" r="1.4" fill="#fff"/><circle cx="63.5" cy="54.5" r="1.4" fill="#fff"/>
+    <path d="M46 63 L54 63 L50 71 Z" fill="#ffb02e" ${st(2.5)}/>`,
+  cat: () => `<path d="M28 48 L30 22 L47 37 Z" fill="#f4a04b" ${st()}/><path d="M32.5 40 L33.5 29 L41 36 Z" fill="#ffb3c4"/>
+    <path d="M72 48 L70 22 L53 37 Z" fill="#f4a04b" ${st()}/><path d="M67.5 40 L66.5 29 L59 36 Z" fill="#ffb3c4"/>
+    <ellipse cx="50" cy="60" rx="27" ry="25" fill="#f4a04b" ${st()}/><path d="M44 37 L46 43 M50 36 L50 43 M56 37 L54 43" stroke="#c9742a" stroke-width="2.5" stroke-linecap="round"/>
+    ${EYES(56, 10)}${CHEEKS(65, 17)}<path d="M47 63 L53 63 L50 66.5 Z" fill="#ff7f98" ${st(2)}/>
+    <path d="M50 66.5 Q47 71 43 69 M50 66.5 Q53 71 57 69" fill="none" ${st(2.5)}/><path d="M24 62 L36 64 M24 68 L36 67 M76 62 L64 64 M76 68 L64 67" ${st(2)}/>`
+};
+const STETH = 'M30 82 C27 98 46 100 50 91 M70 82 C73 98 54 100 50 91 M50 91 L50 94';
+const ACC = {
+  none: () => '',
+  santa: () => `<path d="M22 42 Q30 13 58 12 Q80 12 89 32 L77 40 Z" fill="#e8384f" ${st()}/><rect x="18" y="36" width="64" height="11" rx="5.5" fill="#fff" ${st()}/><circle cx="88" cy="33" r="6.5" fill="#fff" ${st()}/>`,
+  scrub: () => `<path d="M23 47 Q21 20 50 19 Q79 20 77 47 Q50 38 23 47 Z" fill="#30b3a3" ${st()}/><circle cx="37" cy="30" r="2.1" fill="#fff"/><circle cx="50" cy="26" r="2.1" fill="#fff"/><circle cx="63" cy="30" r="2.1" fill="#fff"/><circle cx="43" cy="37" r="2.1" fill="#fff"/><circle cx="57" cy="37" r="2.1" fill="#fff"/><path d="M76 42 Q87 46 84 58 M76 42 Q91 44 91 54" fill="none" ${st(2.5)}/>`,
+  mirror: () => `<path d="M22 45 Q50 32 78 45" fill="none" stroke="${K}" stroke-width="7.5" stroke-linecap="round"/><path d="M22 45 Q50 32 78 45" fill="none" stroke="#4b5070" stroke-width="3.5" stroke-linecap="round"/><circle cx="50" cy="31" r="10.5" fill="#e3ebf3" ${st()}/><circle cx="50" cy="31" r="3.4" fill="#8da0b6"/><path d="M43.5 26 Q45.5 22.5 49 22.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`,
+  steth: () => `<path d="${STETH}" fill="none" stroke="${K}" stroke-width="7.5" stroke-linecap="round"/><path d="${STETH}" fill="none" stroke="#56607e" stroke-width="3.6" stroke-linecap="round"/><circle cx="50" cy="96" r="5.5" fill="#d9e1ea" ${st(2.5)}/>`
+};
+const CHARS = ['reindeer', 'snowman', 'ginger', 'penguin', 'elf', 'bear', 'owl', 'cat'];
+const CHAR_LABEL = { reindeer: 'Reindeer', snowman: 'Snowman', ginger: 'Ginger', penguin: 'Penguin', elf: 'Elf', bear: 'Polar bear', owl: 'Owl', cat: 'Cat' };
+const COLORS = ['#ffd23f', '#8fe3ff', '#ff9cba', '#9be37a', '#c6a8ff', '#ffb067'];
+const ACCS = ['none', 'steth', 'santa', 'scrub', 'mirror'];
+const ACC_LABEL = { none: 'Nothing', santa: 'Santa hat', steth: 'Stethoscope', scrub: 'Scrub cap', mirror: 'Head mirror' };
+function avatarSVG(a) {
+  a = a || {};
+  const c = CHARS.includes(a.c) ? a.c : 'reindeer';
+  const col = COLORS.includes(a.col) || /^#[0-9a-f]{6}$/i.test(a.col || '') ? a.col : '#ffd23f';
+  const acc = ACCS.includes(a.acc) ? a.acc : 'none';
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="${col}"/><circle cx="50" cy="60" r="42" fill="#fff" opacity=".28"/>${CH[c]()}${ACC[acc]()}</svg>`;
+}
+function mysterySVG() {
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#3c3170"/><circle cx="50" cy="60" r="27" fill="#5d4fa0" ${st()}/>${ACC.santa()}<text x="50" y="76" text-anchor="middle" font-family="Luckiest Guy, Impact, sans-serif" font-size="34" fill="#ffd23f" stroke="${K}" stroke-width="2.5" paint-order="stroke">?</text></svg>`;
+}
+const avatarTile = (av, s = 56, cls = '') => `<span class="av ${cls}" style="--s:${s}px">${avatarSVG(av)}</span>`;
+const mysteryTile = (s = 56, cls = '') => `<span class="av ${cls}" style="--s:${s}px">${mysterySVG()}</span>`;
+function giftSVG() {
+  return `<svg viewBox="0 0 200 200" aria-hidden="true">
+    <ellipse cx="100" cy="186" rx="70" ry="9" fill="${K}" opacity=".35"/>
+    <g><rect x="38" y="92" width="124" height="88" rx="10" style="fill:var(--pop)" ${st(5)}/>
+      <rect x="91" y="92" width="18" height="88" style="fill:var(--pop2)" ${st(4)}/>
+      <path d="M52 110 L60 118 M140 150 L148 158 M56 160 L64 152 M138 110 L146 102" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".7"/></g>
+    <g class="lid"><path d="M100 70 C82 38 56 44 66 64 C70 72 88 72 100 70 Z" style="fill:var(--pop2)" ${st(4.5)}/><path d="M100 70 C118 38 144 44 134 64 C130 72 112 72 100 70 Z" style="fill:var(--pop2)" ${st(4.5)}/>
+      <rect x="28" y="68" width="144" height="30" rx="9" style="fill:var(--pop)" ${st(5)}/><rect x="91" y="68" width="18" height="30" style="fill:var(--pop2)" ${st(4)}/><circle cx="100" cy="68" r="8" style="fill:var(--pop2)" ${st(4)}/></g>
+  </svg>`;
+}
+function sackSVG() {
+  return `<svg viewBox="0 0 200 200" aria-hidden="true"><ellipse cx="100" cy="190" rx="70" ry="8" fill="#000" opacity=".3"/>
+    <path d="M72 92 C24 112 22 186 100 186 C178 186 176 112 128 92 Z" fill="#d33a3f" ${st(5)}/>
+    <path d="M58 150 Q66 168 84 174" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".35"/>
+    <path d="M116 130 l9 0 l3 -9 l3 9 l9 0 l-7 6 l3 9 l-8 -6 l-8 6 l3 -9 Z" fill="#ffd23f" ${st(2.5)}/>
+    <path d="M74 92 C56 72 62 50 84 56 C90 44 110 44 116 56 C138 50 144 72 126 92 Z" fill="#b52b33" ${st(5)}/>
+    <path d="M88 60 Q92 74 90 88 M112 60 Q108 74 110 88" fill="none" stroke="${K}" stroke-width="2.5" stroke-linecap="round" opacity=".55"/>
+    <path d="M70 92 Q100 102 130 92" fill="none" stroke="${K}" stroke-width="13" stroke-linecap="round"/><path d="M70 92 Q100 102 130 92" fill="none" stroke="#ffd23f" stroke-width="7" stroke-linecap="round"/>
+    <path d="M100 98 Q90 116 80 120 M100 98 Q110 116 122 118" fill="none" stroke="${K}" stroke-width="9" stroke-linecap="round"/><path d="M100 98 Q90 116 80 120 M100 98 Q110 116 122 118" fill="none" stroke="#ffd23f" stroke-width="4" stroke-linecap="round"/></svg>`;
+}
+const ICON = {
+  hq: '<svg viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h4.5v-5.5h4V20h4.5V9.5"/></svg>',
+  rx: '<svg viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 8h3.2a1.8 1.8 0 0 1 0 3.6H9V8zm0 3.6v4.4m3-4.4 4 4.4m0-3-3.2 3.2"/></svg>',
+  giftee: '<svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="1.5"/><rect x="3" y="7" width="18" height="3.5" rx="1"/><path d="M12 7v13M12 7c-2-3.5-5.5-3-4.5-.8.5 1 3 .9 4.5.8zm0 0c2-3.5 5.5-3 4.5-.8-.5 1-3 .9-4.5.8z"/></svg>',
+  mail: '<svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.5 7 8.5 6.5L20.5 7"/></svg>',
+  who: '<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5.5 5.5"/><path d="M8.5 9a2 2 0 1 1 2.8 1.8c-.6.3-.8.7-.8 1.3"/><circle cx="10.5" cy="14" r=".4"/></svg>'
+};
+
+/* ================= content ================= */
+const LOOKS = {
+  candy: { label: 'Candy Cane', color: '#e5455c', mascot: { c: 'reindeer', col: '#ffd23f', acc: 'steth' } },
+  evergreen: { label: 'Evergreen', color: '#25935a', mascot: { c: 'elf', col: '#ffd23f', acc: 'santa' } },
+  frost: { label: 'Frostbite', color: '#3a74dc', mascot: { c: 'penguin', col: '#8fe3ff', acc: 'scrub' } },
+  ginger: { label: 'Gingerbread', color: '#c06a31', mascot: { c: 'ginger', col: '#ff9cba', acc: 'mirror' } },
+  plum: { label: 'Sugarplum', color: '#8549d4', mascot: { c: 'owl', col: '#ffd23f', acc: 'steth' } }
+};
+const lookOf = r => LOOKS[r && r.look] ? r.look : 'candy';
+const IDEAS = [
+  [12, 'Fuzzy socks covered in tiny cartoon organs'], [12, 'A fancy gel pen set for color-coded notes'], [10, 'A stack of silly laptop stickers'], [12, 'A badge reel with a goofy charm'],
+  [15, 'Lip balm + heavy-duty hand cream (all that hand washing)'], [15, 'A snack survival box for exam week'], [15, 'A low-maintenance succulent for their desk'], [15, 'A penlight with a cute design'],
+  [15, 'Hot sauce sampler'], [15, 'A gift card to their go-to coffee spot'], [18, 'An anatomy coloring book (for fun, not for Step)'], [20, 'A plush neuron, heart, or microbe'],
+  [20, 'A weighted sleep mask for post-call naps'], [20, 'A phone stand for lecture videos'], [20, 'Compression socks in a loud print'], [22, 'A cozy candle (check their Rx for allergies)'],
+  [25, 'A puzzle or card game for study breaks'], [25, 'A really good insulated tumbler'], [28, 'A fuzzy throw blanket for flashcard marathons'], [30, 'A quick-meals cookbook for busy weeks'],
+  [35, 'A mini Bluetooth speaker'], [40, 'A mini massage gun for post-anatomy-lab shoulders'], [45, 'A desk lamp that makes late nights nicer'], [50, 'Noise-blocking earplugs or earbuds for the library']
+];
+const STARTERS = ['My go-to coffee order is…', 'We\'ve shared a class where…', 'On weekends you\'ll find me…', 'My favorite organ system is…', 'My initials are hiding in…', 'I sit near you during…'];
+
+/* ================= state ================= */
+const S = {
+  view: 'boot', tab: 'hq', code: null, room: null, members: [], sealed: null, mine: null,
+  msgs: { out: [], in: [] }, guesses: [], unmasks: [], roomCache: {},
+  create: { look: 'candy' }, av: { c: 'reindeer', col: '#ffd23f', acc: 'steth' },
+  join: null, pending: null, mailMode: 'out', hintOn: false, idea: '', subs: [], threadSubs: [], dirty: new Set(), loadedRoom: false
+};
+const getMe = () => { const m = LS.get('me', null) || {}; m.rooms = m.rooms || {}; return m; };
+const saveMe = m => LS.set('me', m);
+const myEntry = () => getMe().rooms[S.code] || null;
+const myId = () => (myEntry() || {}).memberId || null;
+const memberById = id => S.members.find(m => m.id === id) || null;
+const myMember = () => memberById(myId());
+const isHost = () => !!S.room && S.room.hostId === myId();
+const hasWish = m => !!(m && m.wish && String(m.wish.loves || '').trim());
+const inDraw = () => !!S.room && Array.isArray(S.room.drawnIds) && S.room.drawnIds.includes(myId());
+const roundOk = d => d && S.room && d.round === S.room.round;
+
+function setLook(look) {
+  const l = LOOKS[look] ? look : 'candy';
+  if (document.body.dataset.look !== l) document.body.dataset.look = l;
+  const meta = $('meta[name="theme-color"]'); if (meta) meta.content = LOOKS[l].color;
+}
+
+/* ================= helpers ================= */
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2800); }
+function fmtDate(ts) { try { return new Date(ts).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return new Date(ts).toString(); } }
+function ago(ts) { const s = (Date.now() - ts) / 1000; if (s < 60) return 'just now'; if (s < 3600) return Math.floor(s / 60) + 'm ago'; if (s < 86400) return Math.floor(s / 3600) + 'h ago'; return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); }
+function toLocalInput(ts) { if (!ts) return ''; const d = new Date(ts); const p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; }
+function fromLocalInput(v) { if (!v) return null; const t = new Date(v).getTime(); return isNaN(t) ? null : t; }
+function busy(btn, label) { if (!btn) return () => {}; const html = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="spin"></span> ${esc(label)}`; return () => { btn.disabled = false; btn.innerHTML = html; }; }
+const inviteLink = () => location.origin + location.pathname + '?room=' + S.code;
+const field = (id, label, val, ph, multi, max = 300, hint = '') => `<label class="field" for="${id}">${label}${hint ? `<span class="hint">${hint}</span>` : ''}${multi ? `<textarea id="${id}" maxlength="${max}" placeholder="${esc(ph)}">${esc(val || '')}</textarea>` : `<input type="text" id="${id}" maxlength="${max}" placeholder="${esc(ph)}" value="${esc(val || '')}">`}</label>`;
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+let installEvt = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; scheduleRender(); });
+
+/* ================= effects: snow + confetti ================= */
+function snow() {
+  const c = $('#snow'), ctx = c.getContext('2d'); let W, H, dpr, flakes = [];
+  const resize = () => { dpr = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; c.width = W * dpr; c.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+  resize(); addEventListener('resize', resize);
+  const n = Math.round(Math.min(80, W / 9));
+  for (let i = 0; i < n; i++) flakes.push({ x: rnd() * W, y: rnd() * H, r: 1.4 + rnd() * 3.2, s: .25 + rnd() * .9, d: rnd() * 6.28 });
+  const draw = t => {
+    ctx.clearRect(0, 0, W, H); ctx.fillStyle = 'rgba(255,255,255,.85)';
+    for (const f of flakes) {
+      if (!REDUCED) { f.y += f.s; f.x += Math.sin(t / 1400 + f.d) * .35; if (f.y > H + 6) { f.y = -6; f.x = rnd() * W; } if (f.x > W + 6) f.x = -6; if (f.x < -6) f.x = W + 6; }
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.283); ctx.fill();
+    }
+    if (!REDUCED && !document.hidden) requestAnimationFrame(draw);
+  };
+  requestAnimationFrame(draw);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !REDUCED) requestAnimationFrame(draw); });
+}
+function confetti(n = 160) {
+  if (REDUCED) return;
+  const c = $('#fx'), ctx = c.getContext('2d'); const dpr = Math.min(devicePixelRatio || 1, 2); const W = innerWidth, H = innerHeight;
+  c.width = W * dpr; c.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const cs = getComputedStyle(document.body); const cols = [cs.getPropertyValue('--pop').trim() || '#e5455c', cs.getPropertyValue('--pop2').trim() || '#32c48d', '#ffd23f', '#ffffff', '#8fe3ff', '#ff9cba'];
+  const P = []; for (let i = 0; i < n; i++) P.push({ x: W / 2 + (rnd() - .5) * 80, y: H * .42, vx: (rnd() - .5) * 15, vy: -6 - rnd() * 11, g: .3 + rnd() * .12, w: 6 + rnd() * 8, h: 5 + rnd() * 9, r: rnd() * 6.28, vr: (rnd() - .5) * .35, c: pick(cols), circ: rnd() < .3 });
+  const t0 = performance.now();
+  const step = t => {
+    ctx.clearRect(0, 0, W, H);
+    for (const p of P) { p.vy += p.g; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.strokeStyle = K; ctx.lineWidth = 1.5;
+      if (p.circ) { ctx.beginPath(); ctx.arc(0, 0, p.w / 2.4, 0, 6.283); ctx.fill(); ctx.stroke(); } else { ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.strokeRect(-p.w / 2, -p.h / 2, p.w, p.h); }
+      ctx.restore(); }
+    if (t - t0 < 3600) requestAnimationFrame(step); else ctx.clearRect(0, 0, W, H);
+  };
+  requestAnimationFrame(step);
+}
+
+/* ================= modal / overlay ================= */
+let confirmRes = null;
+function openModal(html) { $('#modal').innerHTML = `<div class="back" data-act="modal-back"><div class="card sheet" role="dialog" aria-modal="true"><button class="x" data-act="modal-close" aria-label="Close">✕</button>${html}</div></div>`; }
+function closeModal() { $('#modal').innerHTML = ''; if (confirmRes) { const r = confirmRes; confirmRes = null; r(false); } }
+function confirmBox(title, body, yes = 'Yes', danger = false) {
+  return new Promise(res => {
+    openModal(`<h2>${title}</h2><p>${body}</p><div class="btn-row"><button class="btn white" data-act="confirm-no">Never mind</button><button class="btn ${danger ? 'red' : ''}" data-act="confirm-yes">${yes}</button></div>`);
+    confirmRes = res;
+  });
+}
+function showKey(key, fresh) {
+  openModal(`<h2>${fresh ? 'Save your Sleigh Key' : 'Your Sleigh Key'}</h2>
+    <p>This is your way back in. If you switch phones or clear your browser, enter it to get your elf, your match, and your Elf Mail back.</p>
+    <div class="keybox">${esc(key)}</div>
+    <div class="btn-row"><button class="btn" data-act="copy-text" data-text="${esc(key)}">Copy key</button><button class="btn white" data-act="modal-close">${fresh ? 'Saved it' : 'Done'}</button></div>
+    <p class="small">Screenshot it or text it to yourself, and keep it private: it unlocks your match.</p>`);
+}
+function copyText(t) {
+  const ok = () => toast('Copied!');
+  const fail = () => { openModal(`<h2>Copy this</h2><p>Your browser blocked automatic copying. Press and hold the text to copy it.</p><textarea id="copybox" readonly>${esc(t)}</textarea><button class="btn" data-act="modal-close">Done</button>`); setTimeout(() => { const b = $('#copybox'); if (b) { b.focus(); b.select(); } }, 60); };
+  try { navigator.clipboard.writeText(t).then(ok, fail); } catch (e) { fail(); }
+}
+const overlay = html => { const o = $('#overlay'); o.innerHTML = html; o.hidden = false; };
+const closeOverlay = () => { const o = $('#overlay'); o.hidden = true; o.innerHTML = ''; };
+
+/* ================= rendering ================= */
+let lastKey = '', rq = false;
+function scheduleRender() { if (rq) return; rq = true; requestAnimationFrame(() => { rq = false; render(); }); }
+function render() {
+  const key = S.view + ':' + (S.view === 'room' ? S.tab : '') + ':' + (S.join && S.join.step || '');
+  const same = key === lastKey;
+  const view = $('#view');
+  const saved = {}; let focusId = null, selS = null, selE = null;
+  if (same) {
+    view.querySelectorAll('input[id],textarea[id],select[id]').forEach(el => { if (S.dirty.has(el.id)) saved[el.id] = el.value; });
+    const a = document.activeElement;
+    if (a && a.id && view.contains(a)) { focusId = a.id; try { selS = a.selectionStart; selE = a.selectionEnd; } catch (e) {} }
+  } else S.dirty.clear();
+  const th = view.querySelector('.thread');
+  const atBottom = !th || th.scrollHeight - th.scrollTop - th.clientHeight < 60, prevTop = th ? th.scrollTop : 0;
+  view.innerHTML = currentView();
+  view.classList.toggle('fresh', !same);
+  if (same) {
+    for (const id in saved) { const el = document.getElementById(id); if (el) el.value = saved[id]; }
+    if (focusId) { const el = document.getElementById(focusId); if (el) { el.focus({ preventScroll: true }); try { if (selS != null) el.setSelectionRange(selS, selE); } catch (e) {} } }
+  }
+  const th2 = view.querySelector('.thread'); if (th2) th2.scrollTop = (!same || atBottom) ? th2.scrollHeight : prevTop;
+  renderTabs();
+  if (!same) window.scrollTo(0, 0);
+  lastKey = key;
+  if (S.view === 'room' && S.tab === 'mail') markSeen();
+}
+function currentView() {
+  switch (S.view) {
+    case 'boot': return `<div class="loading"><div class="bob">${avatarTile(LOOKS.candy.mascot, 96, 'big')}</div><p class="title">Warming up the sleigh…</p></div>`;
+    case 'error': return vError();
+    case 'home': return vHome();
+    case 'create': return vCreate();
+    case 'join': return vJoin();
+    case 'profile': return vProfile();
+    case 'room': return vRoom();
+  }
+  return '';
+}
+function renderTabs() {
+  const nav = $('#tabs');
+  const show = S.view === 'room' && S.room && myMember();
+  nav.hidden = !show; if (!show) return;
+  const unread = unreadCount('out') + unreadCount('in');
+  const T = [['hq', 'HQ'], ['rx', 'My Rx'], ['giftee', 'Giftee'], ['mail', 'Elf Mail'], ['who', 'Whodunit']];
+  nav.innerHTML = `<div class="inner">${T.map(([k, l]) => `<button class="tab ${S.tab === k ? 'on' : ''}" data-act="tab" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${ICON[k]}<span>${l}</span>${k === 'mail' && unread ? `<i class="badge">${unread}</i>` : ''}</button>`).join('')}</div>`;
+}
+
+function vError() {
+  return `<section class="card center enter">${avatarTile({ c: 'snowman', col: '#8fe3ff', acc: 'none' }, 90, 'big')}
+    <h2>Couldn't reach the North Pole</h2>
+    <p>The site loaded, but it couldn't connect to your Firebase project. Check that Anonymous sign-in is turned on, Firestore is created, and the rules are published. Then reload.</p>
+    <p class="small">${esc(S.err || '')}</p><button class="btn" data-act="reload">Try again</button></section>`;
+}
+
+function demoBanner() {
+  return `<div class="demo-banner enter"><div><b>Demo mode</b>Everything here stays on this device, and the sample elves are pretend. Connect your free Firebase project to play with real friends.</div><button class="btn white" data-act="guide">How</button></div>`;
+}
+function installCard() {
+  if (!LIVE || isStandalone() || LS.get('installDismissed', false)) return '';
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  return `<section class="card subtle tilt-r">
+    <div class="card-h"><h2>Put it on your home screen</h2><button class="chip" data-act="install-dismiss">Hide</button></div>
+    ${installEvt ? `<p>Install Santa Rounds like an app, with its own icon.</p><button class="btn" data-act="install-go">Install app</button>` :
+      ios ? `<p>In Safari, tap the <b>Share</b> button, then <b>Add to Home Screen</b>. It opens full-screen like an app.</p>` :
+      `<p>Open your browser menu (⋮) and tap <b>Install app</b> or <b>Add to Home screen</b>.</p>`}
+  </section>`;
+}
+
+function vHome() {
+  setLook('candy');
+  const me = getMe(); const codes = Object.keys(me.rooms);
+  return `
+  <header class="hero enter">
+    <div class="bob">${avatarTile(LOOKS.candy.mascot, 128, 'big')}</div>
+    <h1 class="title big">Santa<br>Rounds</h1>
+    <p class="onbg lede">Secret Santa for your med school crews. Draw names, swap anonymous Elf Mail, drop hints, and unmask everyone on gift day.</p>
+  </header>
+  ${!LIVE ? demoBanner() : ''}
+  <section class="card">
+    <div class="card-h"><h2>Your rooms</h2>${codes.length ? `<span class="small">${codes.length} ${codes.length === 1 ? 'crew' : 'crews'}</span>` : ''}</div>
+    ${codes.length ? `<div class="rooms">${codes.map(roomRow).join('')}</div>` : `<p class="empty">No rooms yet. Start one for a friend group, or join with the code someone sent you.</p>`}
+    <div class="btn-row"><button class="btn" data-act="go-create">Start a room</button><button class="btn white" data-act="go-join">Join with a code</button></div>
+  </section>
+  ${installCard()}
+  <section class="card tilt-l">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li><span><b>Make your elf.</b> Pick a cartoon character and join your group's room.</span></li>
+      <li><span><b>Write your Rx.</b> Your wishlist, prescription style: loves, contraindications, allergies, sizes.</span></li>
+      <li><span><b>Shake the sack.</b> The host runs the draw. Every match is sealed so only that Santa can open it, the host included.</span></li>
+      <li><span><b>Elf season.</b> Send anonymous Elf Mail, drop hints, and lock in a guess for who has you.</span></li>
+      <li><span><b>Big reveal.</b> On gift day the masks come off and the detective scores come out.</span></li>
+    </ol>
+  </section>`;
+}
+function roomRow(code) {
+  const e = getMe().rooms[code] || {}; const c = S.roomCache[code] || {};
+  const look = LOOKS[c.look || e.look] ? (c.look || e.look) : 'candy';
+  const phase = c.phase === 'drawn' ? 'Elf season' : c.phase === 'revealed' ? 'Revealed' : c.phase === 'lobby' ? 'Wishlists open' : '';
+  return `<button class="roomrow" data-act="open-room" data-code="${esc(code)}">${avatarTile(LOOKS[look].mascot, 52)}
+    <span class="meta"><b>${esc(c.name || e.name || code)}</b><span class="small">${esc(code)}${phase ? ' · ' + phase : ''}</span></span><span class="chip" aria-hidden="true">Open</span></button>`;
+}
+
+function backBar(label = 'Rooms', act = 'go-home') { return `<div class="topbar"><button class="chip" data-act="${act}">‹ ${label}</button></div>`; }
+function looksPicker(sel, act) {
+  return `<div class="looks" role="radiogroup" aria-label="Room look">${Object.entries(LOOKS).map(([k, l]) => `<button type="button" class="look ${sel === k ? 'on' : ''}" style="--c:${l.color}" data-act="${act}" data-look="${k}" role="radio" aria-checked="${sel === k}">${avatarTile(l.mascot, 44)}<span>${l.label}</span></button>`).join('')}</div>`;
+}
+function vCreate() {
+  setLook(S.create.look);
+  return `${backBar()}
+  <header class="room-hero enter"><div class="bob">${avatarTile(LOOKS[S.create.look].mascot, 96, 'big')}</div><h1 class="title">Start a room</h1><p class="onbg">One room per friend group. You'll be the host.</p></header>
+  <form class="card" data-form="create">
+    ${field('c-name', 'Room name', S.create.name, 'Anatomy Lab Survivors', false, 40)}
+    <div class="field">Room look${looksPicker(S.create.look, 'c-look')}</div>
+    <label class="field" for="c-budget">Gift budget<div class="money"><b>$</b><input type="number" id="c-budget" min="1" max="1000" inputmode="numeric" value="${esc(S.create.budget || 25)}"></div></label>
+    <label class="field" for="c-date">Gift day<span class="hint">Leave it blank if your group hasn't decided. You can set it anytime.</span><input type="datetime-local" id="c-date" value="${esc(S.create.date || '')}"></label>
+    ${field('c-where', 'Where (optional)', S.create.where, 'Study room 3B, after the block exam', false, 60)}
+    <button class="btn big" type="submit">Next: make your elf</button>
+  </form>`;
+}
+
+function vJoin() {
+  const j = S.join || { step: 'code' };
+  if (j.step === 'code') {
+    setLook('candy');
+    return `${backBar()}
+    <header class="room-hero enter"><div class="bob">${avatarTile({ c: 'elf', col: '#8fe3ff', acc: 'santa' }, 96, 'big')}</div><h1 class="title">Join a room</h1><p class="onbg">Enter the 6-letter code your host sent you.</p></header>
+    <form class="card" data-form="join-code">
+      <label class="field" for="j-code">Room code<input type="text" id="j-code" class="codeinput" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC123" value="${esc(j.code || '')}"></label>
+      <button class="btn big" type="submit">Find my room</button>
+    </form>`;
+  }
+  const r = j.room; setLook(lookOf(r));
+  const head = `${backBar('Back', 'join-back')}
+    <header class="room-hero enter"><div class="bob">${avatarTile(LOOKS[lookOf(r)].mascot, 96, 'big')}</div><h1 class="title">${esc(r.name)}</h1>
+    <p class="onbg">${j.members.length} ${j.members.length === 1 ? 'elf' : 'elves'} so far · $${esc(r.budget)} budget</p></header>`;
+  if (j.step === 'room') {
+    return `${head}
+    <section class="card">
+      <h2>Who's joining?</h2>
+      ${j.members.length ? `<div class="crew">${j.members.map(m => `<div class="crewmate">${avatarTile(m.av, 54)}<span class="nm">${esc(m.name)}</span></div>`).join('')}</div>` : ''}
+      ${r.phase !== 'lobby' ? `<p class="small">Heads up: this room already ran its draw. You can join, but the host will need to redo the draw to include you.</p>` : ''}
+      <div class="btn-row"><button class="btn big" data-act="join-new">I'm new here</button><button class="btn white" data-act="join-recover">I joined on another phone</button></div>
+    </section>`;
+  }
+  if (j.step === 'recover') {
+    const can = j.members.filter(m => m.wrap);
+    return `${head}
+    <form class="card" data-form="recover">
+      <h2>Welcome back</h2><p>Pick your elf, then enter your Sleigh Key. You got it when you first joined.</p>
+      <div class="pickgrid">${can.map(m => `<button type="button" class="pick ${j.pickId === m.id ? 'on' : ''}" data-act="rec-pick" data-id="${m.id}">${avatarTile(m.av, 56)}<span>${esc(m.name)}</span></button>`).join('') || '<p class="empty">Nobody here can be recovered yet.</p>'}</div>
+      <label class="field" for="r-key">Sleigh Key<input type="text" id="r-key" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="TINSEL-NARWHAL-4821"></label>
+      <button class="btn big" type="submit">Unlock my elf</button>
+    </form>`;
+  }
+  return '';
+}
+
+function vProfile() {
+  const p = S.pending || {}; setLook(p.look || 'candy'); const a = S.av;
+  return `${backBar('Back', p.create ? 'go-create' : 'join-back')}
+  <section class="preview enter"><div class="bob" id="pv">${avatarTile(a, 132, 'big')}</div><div class="nm" id="pv-name">${esc(S.nick || '')}</div></section>
+  <form class="card" data-form="profile">
+    <h2>Make your elf</h2>
+    ${field('p-name', 'What should your crew call you?', S.nick, 'Your first name or nickname', false, 24)}
+    <div class="field">Character<div class="grid8">${CHARS.map(c => `<button type="button" class="opt ${a.c === c ? 'on' : ''}" data-act="av" data-k="c" data-v="${c}" aria-pressed="${a.c === c}">${avatarTile({ c, col: a.col, acc: 'none' }, 54)}<span>${CHAR_LABEL[c]}</span></button>`).join('')}</div></div>
+    <div class="field">Background<div class="swatches">${COLORS.map(c => `<button type="button" class="sw ${a.col === c ? 'on' : ''}" style="--c:${c}" data-act="av" data-k="col" data-v="${c}" aria-label="Color ${c}" aria-pressed="${a.col === c}"></button>`).join('')}</div></div>
+    <div class="field">Wearing<div class="accs">${ACCS.map(x => `<button type="button" class="chip ${a.acc === x ? 'on' : ''}" data-act="av" data-k="acc" data-v="${x}" aria-pressed="${a.acc === x}">${ACC_LABEL[x]}</button>`).join('')}</div></div>
+    <button class="btn big" type="submit">${p.create ? 'Create the room' : 'Join the room'}</button>
+  </form>`;
+}
+
+/* ---------- room ---------- */
+function vRoom() {
+  const r = S.room;
+  if (!S.loadedRoom) return `<div class="loading"><span class="title">Opening the room…</span></div>`;
+  if (!r) return `${backBar()}<section class="card center enter"><h2>This room is gone</h2><p>The code ${esc(S.code)} doesn't match a room anymore.</p><button class="btn" data-act="forget-room">Remove it from this phone</button></section>`;
+  setLook(lookOf(r));
+  if (!myMember()) {
+    if (!S.membersLoaded) return `<div class="loading"><span class="title">Opening the room…</span></div>`;
+    return `${backBar()}<section class="card center enter"><h2>You're not on the list</h2><p>Your elf isn't in ${esc(r.name)} anymore. The host may have removed it.</p><div class="btn-row"><button class="btn" data-act="rejoin">Join again</button><button class="btn white" data-act="forget-room">Remove from this phone</button></div></section>`;
+  }
+  const bar = `<div class="topbar"><button class="chip" data-act="go-home">‹ Rooms</button><button class="chip code-chip" data-act="copy-text" data-text="${esc(S.code)}" aria-label="Copy room code">${esc(S.code)}</button></div>`;
+  const T = { hq: vHQ, rx: vRx, giftee: vGiftee, mail: vMail, who: vWho };
+  return bar + (T[S.tab] || vHQ)();
+}
+function phaseTrack(ph) {
+  const steps = [['lobby', 'Wishlists'], ['drawn', 'Elf season'], ['revealed', 'Big reveal']];
+  const i = steps.findIndex(s => s[0] === ph);
+  return `<div class="track" aria-label="Room progress">${steps.map((s, k) => `${k ? '<span class="ln"></span>' : ''}<span class="st ${k < i ? 'done' : k === i ? 'now' : ''}">${s[1]}</span>`).join('')}</div>`;
+}
+function cdInner(t) {
+  const d = t - Date.now(); if (d <= 0) return `<p class="cd-now">It's gift day! Go give the thing.</p>`;
+  const s = Math.floor(d / 1000);
+  return [[Math.floor(s / 86400), 'days'], [Math.floor(s % 86400 / 3600), 'hrs'], [Math.floor(s % 3600 / 60), 'min'], [s % 60, 'sec']].map(([v, l]) => `<div><b>${v}</b><small>${l}</small></div>`).join('');
+}
+function countdownCard(r) {
+  if (!r.exchangeAt) return `<section class="card"><div class="card-h"><h2>Gift day</h2><span class="tag">Date TBD</span></div><p>The sleigh is still in the garage. ${isHost() ? 'Set the date once your group decides.' : 'Your host will set the date once the group decides.'}</p>${isHost() ? `<button class="btn white" data-act="host-edit">Set the date</button>` : ''}${r.where ? `<p class="small">Where: ${esc(r.where)}</p>` : ''}</section>`;
+  return `<section class="card"><div class="card-h"><h2>Gift day</h2><span class="small">${esc(fmtDate(r.exchangeAt))}</span></div><div class="cd" data-cd="${+r.exchangeAt}">${cdInner(+r.exchangeAt)}</div>${r.where ? `<p class="small">Where: ${esc(r.where)}</p>` : ''}</section>`;
+}
+function statusCard() {
+  const r = S.room, me = myMember();
+  if (r.phase === 'lobby') {
+    return `<section class="card tilt-l"><h2>Wishlists are open</h2><p>Once everyone's in and has filled out their Rx, the host shakes the sack and everyone gets a secret giftee.</p>${hasWish(me) ? '' : `<button class="btn" data-act="tab" data-tab="rx">Write my Rx</button>`}</section>`;
+  }
+  if (r.phase === 'drawn') {
+    if (!inDraw()) return `<section class="card tilt-l"><h2>You joined after the draw</h2><p>Ask your host to redo the draw so you get a giftee too.</p></section>`;
+    return `<section class="card tilt-l"><h2>Matches are sealed</h2><p>Your giftee is waiting, wrapped. Only you can open it.</p><div class="btn-row"><button class="btn" data-act="tab" data-tab="giftee">${opened() ? 'See my giftee' : 'Unwrap my giftee'}</button><button class="btn white" data-act="tab" data-tab="who">Guess my Santa</button></div></section>`;
+  }
+  return `<section class="card tilt-l"><h2>The masks are off</h2><p>See who had who, and who the sharpest detective was.</p><button class="btn gold" data-act="tab" data-tab="who">See the reveal</button></section>`;
+}
+function crewCard() {
+  const r = S.room, n = S.members.length, done = S.members.filter(hasWish).length;
+  return `<section class="card"><div class="card-h"><h2>The crew</h2><span class="small">${done} of ${n} Rx filled</span></div>
+    <div class="meter" role="progressbar" aria-valuenow="${done}" aria-valuemax="${n}"><i style="width:${n ? Math.round(done / n * 100) : 0}%"></i></div>
+    <div class="crew">${S.members.map(m => `<button class="crewmate" data-act="view-rx" data-id="${m.id}">${avatarTile(m.av, 60)}<span class="nm">${esc(m.name)}${m.id === myId() ? ' (you)' : ''}</span><span class="tags">${m.id === r.hostId ? '<i class="tag host">Host</i>' : ''}${hasWish(m) ? '<i class="tag ok">Rx ✓</i>' : '<i class="tag">No Rx</i>'}</span></button>`).join('')}</div>
+    <p class="small">Tap anyone to read their Rx. Everyone can read every list, so checking your giftee's won't give you away.</p></section>`;
+}
+function hostCard() {
+  const r = S.room, n = S.members.length, ex = (r.exclusions || []).length;
+  const late = r.phase !== 'lobby' ? S.members.filter(m => !(r.drawnIds || []).includes(m.id)).length : 0;
+  const head = `<div class="card-h"><h2>Host tools</h2><span class="tag host">Only you see this</span></div>`;
+  const details = `<button class="btn white" data-act="host-edit">Room details</button>`;
+  if (r.phase === 'lobby') return `<section class="card">${head}
+    <p>When everyone's in, shake the sack. The draw runs on your phone and seals each match so only that Santa can open it. You'll only ever see your own.</p>
+    <button class="btn big red" data-act="host-draw" ${n < 3 ? 'disabled' : ''}>Shake the sack</button>${n < 3 ? `<p class="small">You need at least 3 elves to draw. You have ${n}.</p>` : ''}
+    <div class="btn-row"><button class="btn white" data-act="host-excl">No-match pairs${ex ? ` (${ex})` : ''}</button>${details}</div></section>`;
+  if (r.phase === 'drawn') return `<section class="card">${head}
+    <p>Elf season is on. When it's gift day, start the big reveal and everyone's Santa gets unmasked.</p>
+    ${late ? `<p class="small">${late} ${late === 1 ? 'elf has' : 'elves have'} joined since the draw and ${late === 1 ? "doesn't" : "don't"} have a giftee.</p>` : ''}
+    <button class="btn big gold" data-act="host-reveal">Start the big reveal</button>
+    <div class="btn-row"><button class="btn white" data-act="host-redraw">Redo the draw</button>${details}</div></section>`;
+  return `<section class="card">${head}<p>Gift day is done. Nice hosting.</p><div class="btn-row">${details}<button class="btn white" data-act="host-unreveal">Back to Elf season</button></div></section>`;
+}
+function inviteCard() {
+  return `<section class="card"><h2>Invite your crew</h2><p>${LIVE ? 'Send the invite link, or have them tap "Join with a code" and enter:' : 'Friends join by tapping "Join with a code" and entering:'}</p><div class="codebig">${esc(S.code)}</div>
+    <div class="btn-row">${LIVE ? `<button class="btn" data-act="copy-text" data-text="${esc(`Join our Secret Santa "${S.room.name}" on Santa Rounds: ${inviteLink()}`)}">Copy invite link</button>` : ''}<button class="btn white" data-act="copy-text" data-text="${esc(S.code)}">Copy code</button></div></section>`;
+}
+function deviceCard() {
+  return `<section class="card subtle"><h2>This phone</h2><p>You're in as <b>${esc(myMember().name)}</b>. Your Sleigh Key gets you back in on any other phone.</p>
+    <div class="btn-row"><button class="btn white" data-act="show-key">Show my Sleigh Key</button><button class="btn ghost" data-act="forget-room">Remove from this phone</button></div></section>`;
+}
+function demoRoomCard() {
+  const r = S.room; const bots = S.members.filter(m => m.bot).length;
+  return `<section class="card demo"><h2>Demo tools</h2><p>Add pretend elves so you can try the draw, Elf Mail, guessing, and the reveal on your own. They write back and drop hints.</p>
+    <div class="btn-row"><button class="btn" data-act="demo-fill" ${r.phase !== 'lobby' || bots ? 'disabled' : ''}>${bots ? 'Sample elves added' : 'Add 6 sample elves'}</button><button class="btn ghost" data-act="demo-reset">Wipe the demo</button></div></section>`;
+}
+function vHQ() {
+  const r = S.room, look = LOOKS[lookOf(r)], n = S.members.length;
+  return `<section class="room-hero enter"><div class="bob">${avatarTile(look.mascot, 108, 'big')}</div><h1 class="title">${esc(r.name)}</h1>
+    <p class="onbg">$${esc(r.budget)} budget · ${n} ${n === 1 ? 'elf' : 'elves'}</p></section>
+    ${phaseTrack(r.phase)}${countdownCard(r)}${statusCard()}${crewCard()}${isHost() ? hostCard() : ''}${inviteCard()}${!LIVE ? demoRoomCard() : ''}${deviceCard()}`;
+}
+
+function rxPad(m) {
+  const w = m.wish || {};
+  const row = (label, v) => `<dt>${label}</dt><dd class="${String(v || '').trim() ? '' : 'blank'}">${String(v || '').trim() ? nl(v) : 'Not filled in yet'}</dd>`;
+  return `<div class="rx"><div class="rx-top"><span class="rx-logo">Rx</span><div><h3>${esc(m.name)}</h3><p class="small">Santa Rounds Pharmacy · Refills: unlimited</p></div></div>
+    <dl>${row('Rx · would love', w.loves)}${row('Contraindications · please no', w.nope)}${row('Allergies', w.allergies)}${row('Vitals · sizes', w.sizes)}${row('Sig · notes for my Santa', w.sig)}</dl>
+    <div class="rx-foot"><span class="sig-line">Dr. S. Claus, MD</span></div></div>`;
+}
+function vRx() {
+  const m = myMember(), w = m.wish || {};
+  return `<section class="room-hero enter"><h1 class="title">My Rx</h1><p class="onbg">Prescribe your own gift. Your Santa reads this.</p></section>
+  <section class="rxsheet">
+    <div class="rx-top"><span class="rx-logo">Rx</span><div><h3>${esc(m.name)}</h3><p class="small">Santa Rounds Pharmacy · Refills: unlimited</p></div></div>
+    <form data-form="rx" class="rx-form">
+      ${field('rx-loves', 'Rx: things I\'d love', w.loves, 'Cozy socks, iced coffee gift cards, anything with a cat on it', true, 400)}
+      ${field('rx-nope', 'Contraindications: please no', w.nope, 'Mugs. So many mugs.', true, 300)}
+      ${field('rx-allergies', 'Allergies and food stuff', w.allergies, 'Peanuts, dairy, none…', false, 120)}
+      ${field('rx-sizes', 'Vitals: sizes', w.sizes, 'Shirt M, socks 9–11, ring 7', false, 120)}
+      ${field('rx-sig', 'Sig: notes for my Santa', w.sig, 'I live off campus, so small gifts travel better', true, 300)}
+      <div class="rx-foot"><span class="sig-line">Dr. S. Claus, MD</span><button class="btn" type="submit">Save my Rx</button></div>
+    </form>
+  </section>`;
+}
+
+const openedKey = () => S.code + ':' + (S.room && S.room.round);
+const opened = () => !!LS.get('opened', {})[openedKey()];
+function emptyCard(av, title, body, extra = '') { return `<section class="card center enter">${av}<h2>${title}</h2><p>${body}</p>${extra}</section>`; }
+function giftGate() {
+  const r = S.room;
+  if (r.phase === 'lobby') return emptyCard(avatarTile({ c: 'reindeer', col: '#c6a8ff', acc: 'santa' }, 90, 'big'), "The sack hasn't been shaken yet", 'When the host runs the draw, your giftee shows up here, wrapped. Fill in your Rx while you wait.', `<button class="btn" data-act="tab" data-tab="rx">Write my Rx</button>`);
+  if (!inDraw()) return emptyCard(avatarTile({ c: 'penguin', col: '#8fe3ff', acc: 'none' }, 90, 'big'), 'You joined after the draw', 'Ask the host to redo the draw so you get a giftee too.');
+  if (!S.mine) return `<div class="loading"><span class="title">Unsealing your match…</span></div>`;
+  if (S.mine.error) return emptyCard(avatarTile({ c: 'owl', col: '#ffb067', acc: 'mirror' }, 90, 'big'), "This phone can't open your match", 'Your match is locked to the elf you joined with. Open Santa Rounds on that phone, or use "Join with a code" → "I joined on another phone" with your Sleigh Key.');
+  return null;
+}
+function vGiftee() {
+  const gate = giftGate(); if (gate) return gate;
+  const r = S.room, g = memberById(S.mine.gifteeId);
+  if (!g) return emptyCard(avatarTile({ c: 'snowman', col: '#c6a8ff', acc: 'none' }, 90, 'big'), 'Your giftee left the room', 'Ask the host to redo the draw.');
+  if (!opened()) return `<section class="room-hero enter"><h1 class="title">Your match</h1><p class="onbg">Somebody in ${esc(r.name)} is yours to spoil.</p></section>
+    <section class="card center"><button class="giftbtn idle-wiggle" data-act="open-gift" aria-label="Unwrap your match">${giftSVG()}</button><button class="btn big" data-act="open-gift">Unwrap it</button></section>`;
+  return `<section class="giftee-hero enter">${avatarTile(g.av, 124, 'big')}<p class="onbg kicker">You're the Secret Santa for</p><h1 class="title">${esc(g.name)}</h1><p class="onbg">Budget: $${esc(r.budget)}. Keep it secret, keep it safe.</p></section>
+    <section class="card">${rxPad(g)}</section>
+    <section class="card"><h2>Stuck on a gift?</h2><p class="idea" id="idea-text">${esc(S.idea || `Spin for an idea that fits a $${r.budget} budget.`)}</p><button class="btn white" data-act="spin">Spin the idea wheel</button></section>
+    <div class="btn-row"><button class="btn big" data-act="mail-to" data-mode="out">Send Elf Mail</button><button class="btn white" data-act="open-gift">Unwrap again</button></div>`;
+}
+
+/* ---------- mail ---------- */
+function seenMap() { return LS.get('seen', {}); }
+function threadOf(mode) { return S.mine ? (mode === 'out' ? S.mine.tOut : S.mine.tIn) : null; }
+function unreadCount(mode) {
+  if (!S.mine || S.mine.error || !S.room || S.room.phase === 'lobby') return 0;
+  const tid = threadOf(mode), seen = seenMap()[tid] || 0, mine = mode === 'out' ? 'santa' : 'giftee';
+  return S.msgs[mode].filter(m => m.role !== mine && m.at > seen).length;
+}
+function markSeen() {
+  if (!S.mine || S.mine.error) return; const tid = threadOf(S.mailMode); const list = S.msgs[S.mailMode]; if (!list.length) return;
+  const max = Math.max(...list.map(m => m.at)); const sm = seenMap(); if ((sm[tid] || 0) >= max) return;
+  sm[tid] = max; LS.set('seen', sm); renderTabs();
+}
+function vMail() {
+  const gate = giftGate(); if (gate) return gate;
+  const g = memberById(S.mine.gifteeId); const out = S.mailMode === 'out';
+  const list = S.msgs[S.mailMode]; const mine = out ? 'santa' : 'giftee';
+  const them = out ? (g ? avatarTile(g.av, 34) : mysteryTile(34)) : mysteryTile(34);
+  const items = list.map(m => {
+    if (m.kind === 'hint') return `<div class="hintcard"><span class="ht">Hint from ${m.role === mine ? 'you' : 'your Santa'}</span>${nl(m.text)}<time>${ago(m.at)}</time></div>`;
+    const me = m.role === mine;
+    return `<div class="msg ${me ? 'me' : ''}">${me ? '' : them}<div class="bubble">${nl(m.text)}<time>${ago(m.at)}</time></div></div>`;
+  }).join('');
+  const ur = mode => { const n = unreadCount(mode); return n && S.mailMode !== mode ? `<i class="dot">${n}</i>` : ''; };
+  const empty = out ? `<p class="empty">No mail yet. Say hi to ${esc(g ? g.name : 'your giftee')}. They'll only see "Your Secret Santa".</p>` : `<p class="empty">Nothing from your Santa yet. You can write first. They'll see your name, since they know who you are.</p>`;
+  return `<section class="room-hero enter"><h1 class="title">Elf Mail</h1><p class="onbg">Anonymous notes between Santas and giftees.</p></section>
+  <div class="seg" role="tablist"><button role="tab" aria-selected="${out}" class="${out ? 'on' : ''}" data-act="mail-mode" data-mode="out">To ${esc(g ? g.name : 'my giftee')}${ur('out')}</button><button role="tab" aria-selected="${!out}" class="${!out ? 'on' : ''}" data-act="mail-mode" data-mode="in">From my Santa${ur('in')}</button></div>
+  <section class="card">
+    <div class="who-line">${out ? (g ? avatarTile(g.av, 46) : '') : mysteryTile(46)}<div><b>${out ? esc(g ? g.name : '') : 'Your Secret Santa'}</b><p class="small">${out ? 'You show up as a mystery elf.' : 'Could be anyone. Watch for hints.'}</p></div></div>
+    <div class="thread">${items || empty}</div>
+    <form class="compose" data-form="mail">
+      ${out ? `<div class="starters">${STARTERS.map(s => `<button type="button" class="chip" data-act="starter" data-text="${esc(s)}">${esc(s)}</button>`).join('')}</div>` : ''}
+      <textarea id="m-text" maxlength="500" placeholder="${out ? 'Ask what they want, or tease them a little…' : 'Write back to your mystery Santa…'}"></textarea>
+      <div class="row">${out ? `<label class="toggle"><input type="checkbox" id="m-hint" ${S.hintOn ? 'checked' : ''}> Send as a hint</label>` : '<span></span>'}<button class="btn" type="submit">Send</button></div>
+    </form>
+  </section>`;
+}
+
+/* ---------- who ---------- */
+function vWho() {
+  const gate = giftGate(); if (gate) return gate;
+  return S.room.phase === 'revealed' ? vReveal() : vGuess();
+}
+function vGuess() {
+  const r = S.room, me = myId();
+  const myGuess = (S.guesses.find(g => g.id === me && roundOk(g)) || {}).guess;
+  const others = S.members.filter(m => m.id !== me && (r.drawnIds || []).includes(m.id));
+  const count = S.guesses.filter(roundOk).length, n = (r.drawnIds || []).length;
+  const hints = S.msgs.in.filter(m => m.kind === 'hint' && m.role === 'santa');
+  return `<section class="room-hero enter"><h1 class="title">Whodunit?</h1><p class="onbg">Somebody here has your name. Who is it?</p></section>
+  <section class="card"><div class="card-h"><h2>Lock in a guess</h2><span class="small">${count} of ${n} guesses in</span></div>
+    <p>Change it as often as you want. Guesses stay hidden until the big reveal.</p>
+    <div class="pickgrid">${others.map(m => `<button class="pick ${myGuess === m.id ? 'on' : ''}" data-act="guess" data-id="${m.id}" aria-pressed="${myGuess === m.id}">${avatarTile(m.av, 56)}<span>${esc(m.name)}</span></button>`).join('')}</div>
+  </section>
+  <section class="card"><div class="card-h"><h2>Clue board</h2><span class="small">${hints.length} ${hints.length === 1 ? 'hint' : 'hints'}</span></div>
+    ${hints.length ? hints.map(h => `<div class="hintcard"><span class="ht">Hint</span>${nl(h.text)}<time>${ago(h.at)}</time></div>`).join('') : `<p class="empty">No hints yet. Nudge your Santa in Elf Mail.</p>`}
+    <button class="btn white" data-act="mail-to" data-mode="in">Message my Santa</button></section>`;
+}
+function vReveal() {
+  const me = myId();
+  const un = S.unmasks.filter(roundOk);
+  const santaOf = {}; un.forEach(u => santaOf[u.giftee] = u.id);
+  const mySanta = memberById(santaOf[me]);
+  const flipped = !!LS.get('flipped', {})[openedKey()];
+  const card = mySanta ? `<button class="flip ${flipped ? 'flipped' : ''}" data-act="flip" aria-label="Flip to see your Santa"><div class="in">
+      <div class="face front">${mysteryTile(96)}<span>Tap to unmask</span></div>
+      <div class="face back">${avatarTile(mySanta.av, 110)}<b>${esc(mySanta.name)}</b></div></div></button>
+      <p class="small">${flipped ? `${esc(mySanta.name)} was your Secret Santa all along.` : 'Drumroll, please.'}</p>`
+    : `${mysteryTile(96)}<p>Your Santa hasn't opened the app since the reveal. Their mask comes off as soon as they do.</p>`;
+  // chain
+  const giftOf = {}; un.forEach(u => giftOf[u.id] = u.giftee);
+  const seenIds = new Set(), rows = [];
+  const ids = (S.room.drawnIds || []).filter(id => memberById(id));
+  for (const start of ids) {
+    let cur = start;
+    while (cur && giftOf[cur] && !seenIds.has(cur)) { seenIds.add(cur); rows.push([cur, giftOf[cur]]); cur = giftOf[cur]; }
+  }
+  const pending = ids.filter(id => !seenIds.has(id)).length;
+  const P = id => { const m = memberById(id); return m ? `${avatarTile(m.av, 36)}<span>${esc(m.name)}</span>` : `${mysteryTile(36)}<span>Someone who left</span>`; };
+  // detectives
+  const gs = S.guesses.filter(roundOk);
+  const board = gs.map(g => { const m = memberById(g.id); if (!m) return ''; const real = santaOf[g.id]; const gm = memberById(g.guess);
+    const verdict = !real ? '<i class="tag">Waiting</i>' : real === g.guess ? '<i class="tag ok">Nailed it</i>' : '<i class="tag">Nope</i>';
+    return `<div class="brow">${avatarTile(m.av, 38)}<span class="grow">${esc(m.name)} <span class="small">guessed ${esc(gm ? gm.name : '?')}</span></span>${verdict}</div>`; }).join('');
+  const right = gs.filter(g => santaOf[g.id] && santaOf[g.id] === g.guess).length;
+  return `<section class="room-hero enter"><h1 class="title">Big reveal</h1><p class="onbg">The masks are off.</p></section>
+  <section class="card center"><h2>Your Santa was…</h2>${card}</section>
+  <section class="card"><div class="card-h"><h2>The sleigh chain</h2><span class="small">Who gave to who</span></div>
+    <div class="chain">${rows.map(([a, b]) => `<div class="link"><span class="p">${P(a)}</span><span class="arrow" aria-label="gives to">→</span><span class="p">${P(b)}</span></div>`).join('') || '<p class="empty">Nobody has unmasked yet.</p>'}</div>
+    ${pending ? `<p class="small">${pending} ${pending === 1 ? 'Santa is' : 'Santas are'} still masked. They unmask when they open the app.</p>` : ''}</section>
+  <section class="card"><div class="card-h"><h2>Detective board</h2><span class="small">${right} ${right === 1 ? 'sharp eye' : 'sharp eyes'}</span></div>
+    <div class="board">${board || '<p class="empty">Nobody guessed this round.</p>'}</div></section>`;
+}
+
+/* ================= data flow ================= */
+function leaveRoom() { S.subs.forEach(u => { try { u(); } catch (e) {} }); S.subs = []; stopThreads(); }
+function stopThreads() { S.threadSubs.forEach(u => { try { u(); } catch (e) {} }); S.threadSubs = []; S.msgs = { out: [], in: [] }; }
+function cacheMeta(code, r) {
+  S.roomCache[code] = { name: r.name, look: r.look, phase: r.phase };
+  const me = getMe(); if (me.rooms[code] && (me.rooms[code].name !== r.name || me.rooms[code].look !== r.look)) { me.rooms[code].name = r.name; me.rooms[code].look = r.look; saveMe(me); }
+}
+function enterRoom(code, tab = 'hq') {
+  leaveRoom();
+  Object.assign(S, { code, view: 'room', tab, room: null, members: [], sealed: null, mine: null, guesses: [], unmasks: [], loadedRoom: false, membersLoaded: false, idea: '', mailMode: 'out', hintOn: false });
+  const me = getMe(); me.last = code; saveMe(me);
+  const base = `rooms/${code}`;
+  S.subs.push(B.watchDoc(base, d => { S.room = d; S.loadedRoom = true; if (d) cacheMeta(code, d); effects(); scheduleRender(); }));
+  S.subs.push(B.watchCol(base + '/members', l => { S.members = l.sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0)); S.membersLoaded = true; scheduleRender(); }));
+  S.subs.push(B.watchCol(base + '/guesses', l => { S.guesses = l; scheduleRender(); }));
+  S.subs.push(B.watchCol(base + '/unmask', l => { S.unmasks = l; effects(); scheduleRender(); }));
+  const id = myId(); if (id) S.subs.push(B.watchDoc(`${base}/sealed/${id}`, d => { S.sealed = d; unsealMine(); }));
+  try { if (location.search) history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
+  render();
+}
+let unsealTok = 0;
+async function unsealMine() {
+  const sd = S.sealed, ent = myEntry(), tok = ++unsealTok;
+  if (!sd || !ent) { if (S.mine) { S.mine = null; stopThreads(); } scheduleRender(); return; }
+  if (S.mine && S.mine.round === sd.round) return;
+  let mine;
+  try { const a = await unseal(ent.jwk, sd.santa), b = await unseal(ent.jwk, sd.giftee); mine = { round: sd.round, gifteeId: a.g, tOut: a.t, kOut: a.k, tIn: b.t, kIn: b.k }; }
+  catch (e) { console.warn('unseal failed', e); mine = { round: sd.round, error: true }; }
+  if (tok !== unsealTok) return;
+  S.mine = mine; startThreads(); effects(); scheduleRender();
+}
+const DEC = new Map();
+function startThreads() {
+  S.threadSubs.forEach(u => u()); S.threadSubs = []; S.msgs = { out: [], in: [] };
+  const m = S.mine; if (!m || m.error) return;
+  const base = `rooms/${S.code}/threads`;
+  const watch = (tid, key, slot) => { let loaded = false; return B.watchCol(`${base}/${tid}/msgs`, async list => {
+    const out = [];
+    for (const d of list) { let p = DEC.get(d.id); if (!p) { try { p = await decObj(key, d); DEC.set(d.id, p); } catch (e) { continue; } } out.push({ id: d.id, at: d.at || 0, ...p }); }
+    out.sort((a, b) => a.at - b.at);
+    if (S.mine !== m) return;
+    const before = S.msgs[slot].length; S.msgs[slot] = out; scheduleRender();
+    if (!LIVE) Demo.onMsgs(slot, out);
+    const first = !loaded; loaded = true;
+    if (!first && out.length > before && (S.tab !== 'mail' || S.mailMode !== slot)) { const last = out[out.length - 1]; if (last.role !== (slot === 'out' ? 'santa' : 'giftee')) toast(slot === 'in' ? (last.kind === 'hint' ? 'New hint from your Santa!' : 'New Elf Mail from your Santa') : 'Your giftee wrote back'); }
+  }); };
+  S.threadSubs = [watch(m.tOut, m.kOut, 'out'), watch(m.tIn, m.kIn, 'in')];
+}
+let unmaskSent = '';
+function effects() {
+  const r = S.room; if (!r) return;
+  if (r.phase === 'revealed' && S.mine && !S.mine.error && S.mine.round === r.round) {
+    const k = S.code + ':' + r.round + ':' + myId();
+    if (unmaskSent !== k && !S.unmasks.some(u => u.id === myId() && roundOk(u))) { unmaskSent = k; B.set(`rooms/${S.code}/unmask/${myId()}`, { giftee: S.mine.gifteeId, round: r.round, at: Date.now() }).catch(e => { unmaskSent = ''; console.warn(e); }); }
+  }
+  if (!LIVE) Demo.onRoom();
+}
+
+/* ---------- draw ---------- */
+async function runDraw() {
+  const r = S.room, ms = S.members.slice();
+  if (ms.length < 3) return toast('You need at least 3 elves for a draw.');
+  const ids = ms.map(m => m.id), ex = new Set(r.exclusions || []);
+  const bad = (a, b) => a === b || ex.has(pairKey(a, b));
+  let perm = null;
+  for (let t = 0; t < 4000 && !perm; t++) { const o = shuffle(ids); if (o.every((g, i) => !bad(g, o[(i + 1) % o.length]))) { perm = {}; o.forEach((g, i) => perm[g] = o[(i + 1) % o.length]); } }
+  for (let t = 0; t < 30000 && !perm; t++) { const rc = shuffle(ids); if (ids.every((g, i) => !bad(g, rc[i]))) { perm = {}; ids.forEach((g, i) => perm[g] = rc[i]); } }
+  if (!perm) { toast("No draw works with those no-match pairs. Remove one and try again."); return false; }
+  const round = (r.round || 0) + 1, pubs = Object.fromEntries(ms.map(m => [m.id, m.pub]));
+  const asSanta = {}, asGiftee = {};
+  for (const g of ids) {
+    const rc = perm[g], t = rid(22), k = b64(crypto.getRandomValues(new Uint8Array(32)));
+    asSanta[g] = await seal(pubs[g], { g: rc, t, k, round });
+    asGiftee[rc] = await seal(pubs[rc], { t, k, round });
+  }
+  perm = null;
+  const base = `rooms/${S.code}`;
+  const ops = ids.map(id => ['set', `${base}/sealed/${id}`, { santa: asSanta[id], giftee: asGiftee[id], round }]);
+  const [oS, oG, oU] = await Promise.all([B.getCol(base + '/sealed'), B.getCol(base + '/guesses'), B.getCol(base + '/unmask')]);
+  oS.filter(d => !ids.includes(d.id)).forEach(d => ops.push(['del', `${base}/sealed/${d.id}`]));
+  oG.forEach(d => ops.push(['del', `${base}/guesses/${d.id}`]));
+  oU.forEach(d => ops.push(['del', `${base}/unmask/${d.id}`]));
+  ops.push(['merge', base, { phase: 'drawn', round, drawnAt: Date.now(), drawnIds: ids }]);
+  await B.batch(ops);
+  return true;
+}
+async function drawShow() {
+  const ms = S.members;
+  overlay(`<div class="ov-inner"><div class="sackwrap"><div class="sack" id="sack">${sackSVG()}</div>${ms.map((m, i) => { const a = rnd() * 6.283, d = 150 + rnd() * 70; return `<span class="flyer" style="--x:${Math.round(Math.cos(a) * d)}px;--y:${Math.round(Math.sin(a) * d - 40)}px;--d:${(i * .13).toFixed(2)}s">${avatarTile(m.av, 54)}</span>`; }).join('')}</div>
+    <p class="title ov-title" id="ov-msg">Into the sack…</p><p class="onbg" id="ov-sub">Every elf goes in. Nobody peeks.</p><div id="ov-done" hidden></div></div>`);
+  const anim = (async () => {
+    await sleep(Math.min(2200, 900 + ms.length * 130));
+    const s = $('#sack'); if (s) s.classList.add('go');
+    const msg = $('#ov-msg'), sub = $('#ov-sub');
+    if (msg) msg.textContent = 'Shaking the sack…'; if (sub) sub.textContent = 'Sealing every match so only its Santa can open it';
+    await sleep(1800);
+  })();
+  let ok = false;
+  try { ok = await runDraw(); } catch (e) { console.error(e); toast('The draw hit a snag. Check your connection and try again.'); }
+  await anim;
+  if (!ok) { closeOverlay(); return; }
+  const s = $('#sack'); if (s) s.classList.remove('go');
+  $('#ov-msg').textContent = 'Sealed!';
+  $('#ov-sub').textContent = `${ms.length} matches made. Not even you know who has who, except your own.`;
+  const d = $('#ov-done'); d.hidden = false; d.innerHTML = `<button class="btn big gold pop-in" data-act="ov-giftee">Unwrap my giftee</button>`;
+  confetti();
+}
+
+/* ---------- gift open ---------- */
+let taps = 0;
+function giftShow() {
+  const g = memberById(S.mine && S.mine.gifteeId); if (!g) return;
+  taps = REDUCED ? 2 : 0;
+  overlay(`<div class="ov-inner"><p class="title ov-title" id="g-title">Tap the box!</p><button class="giftbtn" id="giftbtn" data-act="gift-tap" aria-label="Tap to open">${giftSVG()}</button><p class="taps" id="g-taps">${3 - taps} taps to go</p>
+    <div id="g-reveal" hidden class="ov-inner">${avatarTile(g.av, 140, 'big')}<p class="onbg kicker">You're the Secret Santa for</p><p class="title ov-title">${esc(g.name)}</p><button class="btn big" data-act="ov-close-giftee">See their Rx</button></div></div>`);
+}
+function giftTap() {
+  const b = $('#giftbtn'); if (!b || b.classList.contains('open')) return;
+  taps++;
+  if (taps < 3) { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); $('#g-taps').textContent = `${3 - taps} ${3 - taps === 1 ? 'tap' : 'taps'} to go`; return; }
+  b.classList.remove('shake'); b.classList.add('open'); $('#g-taps').hidden = true; $('#g-title').textContent = 'Ta-da!';
+  confetti(200);
+  const o = LS.get('opened', {}); o[openedKey()] = true; LS.set('opened', o);
+  setTimeout(() => { b.hidden = true; const r = $('#g-reveal'); if (r) { r.hidden = false; r.classList.add('pop-in'); } }, 650);
+}
+
+/* ================= demo ================= */
+const SAMPLE = [
+  { name: 'Priya', av: { c: 'owl', col: '#c6a8ff', acc: 'steth' }, wish: { loves: 'Matcha anything, fuzzy socks, a new highlighter set', nope: 'Scented candles (roommate allergy)', allergies: 'Tree nuts', sizes: "Socks: women's 7–9", sig: 'I study in the library basement most nights' } },
+  { name: 'Marcus', av: { c: 'bear', col: '#8fe3ff', acc: 'scrub' }, wish: { loves: "Hot sauce, running gear, Trader Joe's snacks", nope: 'Mugs. I have 14 mugs.', allergies: 'None', sizes: 'Shirt L', sig: 'Training for a half marathon' } },
+  { name: 'Jules', av: { c: 'cat', col: '#ff9cba', acc: 'mirror' }, wish: { loves: 'Plants that are hard to kill, sticker packs, cozy fiction', nope: 'Clothes with words on them', allergies: 'Dairy', sizes: 'Hoodie M', sig: 'My laptop needs more stickers' } },
+  { name: 'Tomás', av: { c: 'snowman', col: '#9be37a', acc: 'santa' }, wish: { loves: 'Coffee beans, board games, anything anatomy-themed and silly', nope: 'Chocolate (I know, I know)', allergies: 'Shellfish', sizes: 'Gloves L', sig: 'Will trade gifts for coffee' } },
+  { name: 'Hana', av: { c: 'penguin', col: '#ffd23f', acc: 'none' }, wish: { loves: 'Lip balm, gel pens, little desk organizers', nope: 'Gag gifts', allergies: 'None', sizes: 'Ring 6', sig: 'My desk is chaos, please help' } },
+  { name: 'Dev', av: { c: 'reindeer', col: '#ffb067', acc: 'steth' }, wish: { loves: 'Retro video games, spicy chips, warm beanies', nope: 'Anything that needs batteries', allergies: 'Peanuts', sizes: 'Beanie, one size', sig: 'Night owl. Anki at 2am.' } }
+];
+const BOT_REPLIES = ['Ooh, who IS this?? 👀', 'Thank you, mystery elf! Coffee is always the answer.', "Okay I'm narrowing it down. You type like someone from my anatomy group.", "That's adorable. Noted!", 'Can I get a hint? Pretty please?'];
+const BOT_HINTS = ['I sat within three rows of you in our last lecture.', 'My coffee order has oat milk in it.', "We've definitely shared a cadaver table before."];
+const Demo = {
+  bots() { return (LS.get('bots', {})[S.code]) || {}; },
+  info: {}, replied: new Set(), timers: [],
+  async fill(btn) {
+    const done = busy(btn, 'Adding elves…');
+    const all = LS.get('bots', {}); all[S.code] = all[S.code] || {};
+    const ops = [];
+    let t = Date.now();
+    for (const s of SAMPLE) {
+      const k = await genKeys(); const id = rid(14);
+      all[S.code][id] = k.priv;
+      ops.push(['set', `rooms/${S.code}/members/${id}`, { name: s.name, av: s.av, pub: k.pub, wrap: null, wish: s.wish, wishAt: t, joinedAt: ++t, bot: true }]);
+    }
+    LS.set('bots', all); await B.batch(ops); done(); toast('6 sample elves joined!');
+  },
+  async onRoom() {
+    const r = S.room; if (!r || r.phase === 'lobby') return;
+    const bots = this.bots(); if (!Object.keys(bots).length) return;
+    if (this.busy) { this.again = true; return; }
+    this.busy = true; this.again = false;
+    const st = LS.get('demost', {}), key = S.code + ':' + r.round;
+    try {
+      if (!this.info[key]) {
+        const info = {};
+        for (const [id, jwk] of Object.entries(bots)) { const sd = await B.get(`rooms/${S.code}/sealed/${id}`); if (!sd || sd.round !== r.round) continue; try { info[id] = await unseal(jwk, sd.santa); } catch (e) {} }
+        this.info[key] = info;
+      }
+      const info = this.info[key];
+      if (!st[key + ':guess']) {
+        st[key + ':guess'] = 1; LS.set('demost', st);
+        const ids = r.drawnIds || [];
+        await B.batch(Object.keys(info).map(id => ['set', `rooms/${S.code}/guesses/${id}`, { guess: pick(ids.filter(x => x !== id)), round: r.round, at: Date.now() }]));
+      }
+      const santa = Object.entries(info).find(([, v]) => v.g === myId());
+      if (santa && !st[key + ':hints'] && r.phase === 'drawn') {
+        st[key + ':hints'] = 1; LS.set('demost', st);
+        const [, v] = santa;
+        const post = async (text, kind) => B.add(`rooms/${S.code}/threads/${v.t}/msgs`, { ...(await encObj(v.k, { role: 'santa', kind, text })), at: Date.now() });
+        this.timers.push(setTimeout(() => post(pick(BOT_HINTS), 'hint'), 3500));
+        this.timers.push(setTimeout(() => post("Ho ho ho! I already have your gift in mind. Any requests?", 'msg'), 9000));
+      }
+      if (r.phase === 'revealed' && !st[key + ':unmask']) {
+        st[key + ':unmask'] = 1; LS.set('demost', st);
+        await B.batch(Object.entries(info).map(([id, v]) => ['set', `rooms/${S.code}/unmask/${id}`, { giftee: v.g, round: r.round, at: Date.now() }]));
+      }
+    } finally { this.busy = false; if (this.again) setTimeout(() => this.onRoom(), 50); }
+  },
+  onMsgs(slot, list) {
+    if (slot !== 'out' || !S.mine) return;
+    const g = memberById(S.mine.gifteeId); if (!g || !g.bot) return;
+    const last = list[list.length - 1];
+    if (!last || last.role !== 'santa' || this.replied.has(last.id) || Date.now() - last.at > 20000) return;
+    this.replied.add(last.id);
+    const m = S.mine;
+    setTimeout(async () => { if (S.mine !== m) return; await B.add(`rooms/${S.code}/threads/${m.tOut}/msgs`, { ...(await encObj(m.kOut, { role: 'giftee', kind: 'msg', text: pick(BOT_REPLIES) })), at: Date.now() }); }, 2200);
+  }
+};
+
+/* ================= actions ================= */
+const A = {
+  reload() { location.reload(); },
+  'go-home'() { leaveRoom(); S.view = 'home'; S.code = null; render(); refreshRoomCache(); },
+  'go-create'() { S.view = 'create'; render(); },
+  'go-join'() { S.join = { step: 'code' }; S.view = 'join'; render(); },
+  'join-back'() {
+    if (!S.join) { S.view = 'home'; }
+    else if (S.view === 'profile') { S.view = 'join'; S.join.step = 'room'; }
+    else if (S.join.step === 'recover') S.join.step = 'room';
+    else S.join.step = 'code';
+    render();
+  },
+  'open-room'(el) { enterRoom(el.dataset.code); },
+  'c-look'(el) { S.create.look = el.dataset.look; keepCreate(); render(); },
+  'join-new'() { S.pending = { create: false, look: lookOf(S.join.room) }; S.view = 'profile'; render(); },
+  'join-recover'() { S.join.step = 'recover'; S.join.pickId = null; render(); },
+  'rec-pick'(el) { S.join.pickId = el.dataset.id; render(); },
+  av(el) { S.av = { ...S.av, [el.dataset.k]: el.dataset.v }; const n = $('#p-name'); if (n) S.nick = n.value; render(); },
+  tab(el) { S.tab = el.dataset.tab; render(); },
+  'mail-to'(el) { S.mailMode = el.dataset.mode || 'out'; S.tab = 'mail'; render(); },
+  'mail-mode'(el) { S.mailMode = el.dataset.mode; S.hintOn = false; render(); },
+  starter(el) { const ta = $('#m-text'); if (!ta) return; ta.value = (ta.value ? ta.value.trim() + ' ' : '') + el.dataset.text; S.dirty.add('m-text'); const h = $('#m-hint'); if (h) { h.checked = true; S.hintOn = true; } ta.focus(); },
+  'copy-text'(el) { copyText(el.dataset.text); },
+  'modal-close'() { closeModal(); },
+  'modal-back'(el, e) { if (e.target === el) closeModal(); },
+  'confirm-yes'() { const r = confirmRes; confirmRes = null; closeModal(); r && r(true); },
+  'confirm-no'() { closeModal(); },
+  'show-key'() { const e = myEntry(); if (e && e.key) showKey(e.key, false); else toast("This phone doesn't have your key saved."); },
+  async 'forget-room'() {
+    if (!(await confirmBox('Remove from this phone?', "You'll leave the room on this phone only. Your elf stays in the room, and your Sleigh Key brings it back.", 'Remove'))) return;
+    const me = getMe(); delete me.rooms[S.code]; if (me.last === S.code) me.last = null; saveMe(me); A['go-home']();
+  },
+  rejoin() { const code = S.code; const me = getMe(); delete me.rooms[code]; saveMe(me); leaveRoom(); lookupRoom(code); },
+  'view-rx'(el) {
+    const m = memberById(el.dataset.id); if (!m) return;
+    const canRemove = isHost() && m.id !== myId() && S.room.phase === 'lobby';
+    openModal(`${rxPad(m)}${canRemove ? `<button class="btn ghost" data-act="host-remove" data-id="${m.id}">Remove ${esc(m.name)} from the room</button>` : ''}`);
+  },
+  async 'host-remove'(el) {
+    const m = memberById(el.dataset.id); if (!m) return;
+    if (!(await confirmBox(`Remove ${esc(m.name)}?`, 'They leave the room and their Rx goes with them. They can rejoin with the code.', 'Remove', true))) return;
+    const ex = (S.room.exclusions || []).filter(p => !p.split('|').includes(m.id));
+    await B.batch([['del', `rooms/${S.code}/members/${m.id}`], ['merge', `rooms/${S.code}`, { exclusions: ex }]]); toast(`${m.name} was removed`);
+  },
+  'host-draw'() { drawShow(); },
+  async 'host-redraw'() {
+    if (!(await confirmBox('Redo the draw?', 'Everyone gets a brand new giftee. All Elf Mail, hints, and guesses from this round are wiped.', 'Redo it', true))) return;
+    drawShow();
+  },
+  async 'host-reveal'() {
+    if (!(await confirmBox('Start the big reveal?', "Everyone's Santa gets unmasked and the detective board goes live. Do this on gift day.", 'Reveal!'))) return;
+    await B.merge(`rooms/${S.code}`, { phase: 'revealed', revealedAt: Date.now() }); S.tab = 'who'; render(); confetti(220);
+  },
+  async 'host-unreveal'() {
+    if (!(await confirmBox('Back to Elf season?', "Matches stay the same. Santas who already unmasked stay unmasked.", 'Go back'))) return;
+    await B.merge(`rooms/${S.code}`, { phase: 'drawn' });
+  },
+  'host-edit'() { openEdit(); },
+  'e-look'(el) { S.editLook = el.dataset.look; document.querySelectorAll('#modal .look').forEach(b => { const on = b.dataset.look === S.editLook; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); }); },
+  'e-clear-date'() { const d = $('#e-date'); if (d) d.value = ''; },
+  async 'e-save'(el) {
+    const name = $('#e-name').value.trim(); if (!name) return toast('Give the room a name.');
+    const budget = Math.max(1, Math.min(1000, parseInt($('#e-budget').value, 10) || 25));
+    const done = busy(el, 'Saving…');
+    try { await B.merge(`rooms/${S.code}`, { name: name.slice(0, 40), budget, exchangeAt: fromLocalInput($('#e-date').value), where: $('#e-where').value.trim().slice(0, 60), look: LOOKS[S.editLook] ? S.editLook : 'candy' }); closeModal(); toast('Room updated'); }
+    catch (e) { done(); toast("Couldn't save. Try again."); }
+  },
+  'host-excl'() { openExcl(); },
+  async 'x-add'() {
+    const a = $('#x-a').value, b = $('#x-b').value;
+    if (!a || !b || a === b) return toast('Pick two different elves.');
+    const ex = new Set(S.room.exclusions || []); ex.add(pairKey(a, b));
+    await B.merge(`rooms/${S.code}`, { exclusions: [...ex] }); S.room.exclusions = [...ex]; openExcl();
+  },
+  async 'x-del'(el) { const ex = (S.room.exclusions || []).filter(p => p !== el.dataset.p); await B.merge(`rooms/${S.code}`, { exclusions: ex }); S.room.exclusions = ex; openExcl(); },
+  'open-gift'() { giftShow(); },
+  'gift-tap'() { giftTap(); },
+  'ov-close-giftee'() { closeOverlay(); S.tab = 'giftee'; render(); },
+  'ov-giftee'() { closeOverlay(); S.tab = 'giftee'; render(); if (S.mine && !S.mine.error) giftShow(); },
+  spin(el) {
+    const p = $('#idea-text'); if (!p) return; const budget = +S.room.budget || 25;
+    const pool = IDEAS.filter(i => i[0] <= budget * 1.1); const list = pool.length ? pool : IDEAS.slice(0, 6);
+    el.disabled = true; p.classList.add('spinning'); let n = 0;
+    const iv = setInterval(() => { p.textContent = pick(list)[1]; if (++n > (REDUCED ? 0 : 14)) { clearInterval(iv); const fin = pick(list)[1]; p.textContent = fin; S.idea = fin; p.classList.remove('spinning'); el.disabled = false; } }, 80);
+  },
+  async guess(el) {
+    if (S.room.phase !== 'drawn') return;
+    const id = el.dataset.id; const m = memberById(id);
+    try { await B.set(`rooms/${S.code}/guesses/${myId()}`, { guess: id, round: S.room.round, at: Date.now() }); toast(`Guess locked: ${m ? m.name : ''}`); } catch (e) { toast("Couldn't save your guess."); }
+  },
+  flip(el) {
+    if (el.classList.contains('flipped')) return;
+    el.classList.add('flipped'); const f = LS.get('flipped', {}); f[openedKey()] = true; LS.set('flipped', f);
+    setTimeout(() => { confetti(220); scheduleRender(); }, 500);
+  },
+  'install-dismiss'() { LS.set('installDismissed', true); render(); },
+  async 'install-go'() { if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch (e) {} installEvt = null; render(); },
+  'demo-fill'(el) { Demo.fill(el); },
+  async 'demo-reset'() {
+    if (!(await confirmBox('Wipe the demo?', 'Every demo room, elf, and message on this device is deleted.', 'Wipe it', true))) return;
+    Demo.timers.forEach(clearTimeout); leaveRoom(); B.reset(); ['me', 'bots', 'demost', 'opened', 'flipped', 'seen'].forEach(k => LS.set(k, k === 'me' ? { rooms: {} } : {})); Demo.info = {};
+    S.view = 'home'; S.code = null; render(); toast('Demo wiped');
+  },
+  guide() { openGuide(); }
+};
+function keepCreate() {
+  const v = id => { const e = document.getElementById(id); return e ? e.value : undefined; };
+  if (v('c-name') !== undefined) Object.assign(S.create, { name: v('c-name'), budget: v('c-budget'), date: v('c-date'), where: v('c-where') });
+}
+function openEdit() {
+  const r = S.room; S.editLook = lookOf(r);
+  openModal(`<h2>Room details</h2>
+    ${field('e-name', 'Room name', r.name, 'Anatomy Lab Survivors', false, 40)}
+    <div class="field">Room look${looksPicker(S.editLook, 'e-look')}</div>
+    <label class="field" for="e-budget">Gift budget<div class="money"><b>$</b><input type="number" id="e-budget" min="1" max="1000" inputmode="numeric" value="${esc(r.budget || 25)}"></div></label>
+    <label class="field" for="e-date">Gift day<input type="datetime-local" id="e-date" value="${esc(toLocalInput(r.exchangeAt))}"></label>
+    <button type="button" class="chip" data-act="e-clear-date" style="align-self:flex-start">Clear the date (TBD)</button>
+    ${field('e-where', 'Where', r.where, 'Study room 3B', false, 60)}
+    <div class="btn-row"><button class="btn white" data-act="modal-close">Cancel</button><button class="btn" data-act="e-save">Save</button></div>`);
+}
+function openExcl() {
+  const ex = S.room.exclusions || [];
+  const opts = S.members.map(m => `<option value="${m.id}">${esc(m.name)}</option>`).join('');
+  const rows = ex.map(p => { const [a, b] = p.split('|').map(memberById); if (!a || !b) return ''; return `<div class="pairrow">${avatarTile(a.av, 34)}<span>${esc(a.name)}</span><span>×</span>${avatarTile(b.av, 34)}<span class="grow">${esc(b.name)}</span><button class="chip" data-act="x-del" data-p="${esc(p)}">Remove</button></div>`; }).join('');
+  openModal(`<h2>No-match pairs</h2><p>Couples, roommates, or anyone who'd rather not draw each other. The draw keeps these pairs apart in both directions.</p>
+    <div class="pairs">${rows || '<p class="empty">No pairs yet.</p>'}</div>
+    <div class="two"><label class="field" for="x-a">This elf<select id="x-a">${opts}</select></label><label class="field" for="x-b">won't draw<select id="x-b">${opts}</select></label></div>
+    <div class="btn-row"><button class="btn" data-act="x-add">Add pair</button><button class="btn white" data-act="modal-close">Done</button></div>`);
+  const b = $('#x-b'); if (b && b.options.length > 1) b.selectedIndex = 1;
+}
+function openGuide() {
+  openModal(`<div class="guide"><h2>Going live (free)</h2>
+    <p>Right now Santa Rounds runs in demo mode. To play with real friends, connect it to a free Firebase project and host it on GitHub Pages. The full guide is in the README that came with the files.</p>
+    <ol>
+      <li>Create a free project at <code>console.firebase.google.com</code> (no credit card).</li>
+      <li>Turn on <b>Authentication → Anonymous</b>.</li>
+      <li>Create a <b>Firestore Database</b> and paste in the rules from <code>firestore.rules</code>.</li>
+      <li>Register a web app and paste its config into <code>config.js</code>.</li>
+      <li>Upload the folder to a GitHub repo and turn on <b>Pages</b>. Share the link.</li>
+    </ol>
+    <button class="btn" data-act="modal-close">Got it</button></div>`);
+}
+
+/* ================= forms ================= */
+async function lookupRoom(code) {
+  code = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (code.length !== 6) { S.join = { step: 'code', code }; S.view = 'join'; render(); if (code) toast('Room codes are 6 characters.'); return; }
+  if (getMe().rooms[code]) return enterRoom(code);
+  S.view = 'join'; S.join = { step: 'code', code }; render();
+  try {
+    const room = await B.get(`rooms/${code}`);
+    if (!room) { toast("No room with that code. Codes never use O, 0, I, 1, or L."); return; }
+    const members = await B.getCol(`rooms/${code}/members`);
+    S.join = { step: 'room', code, room, members: members.sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0)) }; render();
+  } catch (e) { console.warn(e); toast("Couldn't look that up. Check your connection."); }
+}
+const F = {
+  create() {
+    keepCreate();
+    const name = (S.create.name || '').trim(); if (!name) { toast('Give your room a name.'); $('#c-name').focus(); return; }
+    const budget = Math.max(1, Math.min(1000, parseInt(S.create.budget, 10) || 25));
+    S.pending = { create: true, look: S.create.look, room: { name: name.slice(0, 40), look: S.create.look, budget, exchangeAt: fromLocalInput(S.create.date), where: (S.create.where || '').trim().slice(0, 60) } };
+    S.view = 'profile'; render();
+  },
+  'join-code'() { lookupRoom($('#j-code').value); },
+  async profile(form) {
+    const nick = $('#p-name').value.trim(); S.nick = nick;
+    if (!nick) { toast('Tell your crew what to call you.'); $('#p-name').focus(); return; }
+    const btn = form.querySelector('button[type=submit]'); const done = busy(btn, 'Wrapping up…');
+    try {
+      const keys = await genKeys(), sk = makeSleighKey(), wrap = await wrapPriv(keys.priv, sk), memberId = rid(14), p = S.pending;
+      let code, roomName, look;
+      if (p.create) {
+        for (let i = 0; i < 12; i++) { const c = rid(6, CODE_ALPH); if (!(await B.get(`rooms/${c}`))) { code = c; break; } }
+        if (!code) throw new Error('no code');
+        await B.set(`rooms/${code}`, { ...p.room, hostId: memberId, phase: 'lobby', round: 0, exclusions: [], drawnIds: [], createdAt: Date.now() });
+        roomName = p.room.name; look = p.room.look;
+      } else { code = S.join.code; roomName = S.join.room.name; look = lookOf(S.join.room); }
+      await B.set(`rooms/${code}/members/${memberId}`, { name: nick.slice(0, 24), av: { c: S.av.c, col: S.av.col, acc: S.av.acc }, pub: keys.pub, wrap, wish: null, joinedAt: Date.now() });
+      const me = getMe(); me.rooms[code] = { memberId, jwk: keys.priv, key: sk, name: roomName, look }; saveMe(me);
+      S.pending = null; S.join = null; S.create = { look: 'candy' };
+      enterRoom(code, p.create ? 'hq' : 'rx'); showKey(sk, true); confetti(120);
+    } catch (e) { console.error(e); done(); toast("Couldn't save your elf. Check your connection and try again."); }
+  },
+  async recover(form) {
+    const j = S.join; const m = j.members.find(x => x.id === j.pickId);
+    if (!m) return toast('Tap your elf first.');
+    const key = $('#r-key').value; if (normKey(key).length < 8) return toast('Enter your full Sleigh Key.');
+    const done = busy(form.querySelector('button[type=submit]'), 'Checking the key…');
+    try {
+      const jwk = await unwrapPriv(m.wrap, key);
+      const me = getMe(); me.rooms[j.code] = { memberId: m.id, jwk, key: key.toUpperCase().trim(), name: j.room.name, look: lookOf(j.room) }; saveMe(me);
+      S.join = null; enterRoom(j.code); toast(`Welcome back, ${m.name}!`);
+    } catch (e) { done(); toast("That Sleigh Key didn't fit. Check the words and number."); }
+  },
+  async rx(form) {
+    const v = id => $('#' + id).value.trim();
+    const wish = { loves: v('rx-loves'), nope: v('rx-nope'), allergies: v('rx-allergies'), sizes: v('rx-sizes'), sig: v('rx-sig') };
+    if (!wish.loves) { toast('Add at least one thing you\'d love.'); $('#rx-loves').focus(); return; }
+    const done = busy(form.querySelector('button[type=submit]'), 'Filling…');
+    try { await B.merge(`rooms/${S.code}/members/${myId()}`, { wish, wishAt: Date.now() }); S.dirty.clear(); done(); toast('Rx filled! Your Santa thanks you.'); }
+    catch (e) { done(); toast("Couldn't save. Try again."); }
+  },
+  async mail(form) {
+    const ta = $('#m-text'); const text = ta.value.trim(); if (!text || !S.mine || S.mine.error) return;
+    const out = S.mailMode === 'out'; const hint = out && $('#m-hint') && $('#m-hint').checked;
+    const btn = form.querySelector('button[type=submit]'); btn.disabled = true;
+    try {
+      const enc = await encObj(out ? S.mine.kOut : S.mine.kIn, { role: out ? 'santa' : 'giftee', kind: hint ? 'hint' : 'msg', text: text.slice(0, 500) });
+      await B.add(`rooms/${S.code}/threads/${out ? S.mine.tOut : S.mine.tIn}/msgs`, { ...enc, at: Date.now() });
+      ta.value = ''; S.dirty.delete('m-text'); S.hintOn = false; const h = $('#m-hint'); if (h) h.checked = false;
+      if (hint) toast('Hint dropped!');
+    } catch (e) { toast("Couldn't send. Try again."); }
+    btn.disabled = false;
+  }
+};
+
+/* ================= wiring ================= */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const fn = A[el.dataset.act]; if (!fn) return;
+  if (el.tagName === 'A') e.preventDefault();
+  if (el.dataset.act !== 'modal-back') e.stopPropagation();
+  fn(el, e);
+});
+document.addEventListener('submit', e => { const f = e.target.closest('form[data-form]'); if (!f) return; e.preventDefault(); const fn = F[f.dataset.form]; if (fn) fn(f); });
+document.addEventListener('input', e => {
+  const t = e.target; if (t.id) S.dirty.add(t.id);
+  if (t.id === 'j-code') t.value = t.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (t.id === 'p-name') { S.nick = t.value; const n = $('#pv-name'); if (n) n.textContent = t.value; }
+  if (t.id === 'm-hint') S.hintOn = t.checked;
+});
+document.addEventListener('change', e => { if (e.target.id === 'm-hint') S.hintOn = e.target.checked; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#modal').innerHTML) closeModal(); });
+setInterval(() => document.querySelectorAll('[data-cd]').forEach(el => { el.innerHTML = cdInner(+el.dataset.cd); }), 1000);
+setInterval(() => { if (S.view === 'room' && (S.tab === 'mail' || S.tab === 'who')) scheduleRender(); }, 60000);
+
+async function refreshRoomCache() {
+  const codes = Object.keys(getMe().rooms);
+  await Promise.all(codes.map(async c => { try { const r = await B.get(`rooms/${c}`); if (r) cacheMeta(c, r); } catch (e) {} }));
+  if (S.view === 'home') scheduleRender();
+}
+async function boot() {
+  snow(); render();
+  B = LIVE ? FireBackend(CFG) : MockBackend();
+  try { await B.init(); } catch (e) { console.error(e); S.view = 'error'; S.err = e && e.message; render(); return; }
+  if (LIVE && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  let code = null; try { code = new URLSearchParams(location.search).get('room'); } catch (e) {}
+  if (code) { lookupRoom(code); return; }
+  const me = getMe();
+  if (me.last && me.rooms[me.last]) { enterRoom(me.last); return; }
+  S.view = 'home'; render(); refreshRoomCache();
+}
+boot();
+})();
+</script>
+
+</body>
+</html>
